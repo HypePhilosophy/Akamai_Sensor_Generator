@@ -1,5 +1,5 @@
 {
-  "name": "Akamai-Sensor-Generator",
+  "name": "Akamai_Sensor_Generator",
   "version": "1.0.0",
   "description": "Akamai Sensor Generator",
   "scripts": {
@@ -10,7 +10,7 @@
   },
   "main": "index.js",
   "repository": "https://github.com/HypePhilosophy/Akamai-Sensor-Generator.git",
-  "author": "Jeff Mao",
+  "author": "Jeff Mao, Admin#0001",
   "license": "MIT",
   "dependencies": {
     "chalk": "^3.0.0",
