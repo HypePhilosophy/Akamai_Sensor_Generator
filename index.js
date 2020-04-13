@@ -15,15 +15,15 @@ const UserAgent = require('user-agents'),
 	uuidv4 = require('uuid/v4'),
 	websites = require('./websites.json'),
 	logger = require("./libs/logger"),
-	proxies = fs.readFileSync('./proxy.txt', 'utf-8').toString().toLowerCase().split("\r\n").filter(l => l.length !== 0),
-	{app, session, net} = require('electron');
+	proxies = fs.readFileSync('./proxy.txt', 'utf-8').toString().toLowerCase().split("\r\n").filter(l => l.length !== 0);
+	const {app, session, net} = require('electron');
 
 let akamaiSession;
 app.on('ready', () => {
 	akamaiSession = session.fromPartition('akamai', {cache: false});
 	var userAgent = (new UserAgent(/Chrome/, {deviceCategory: 'desktop'})).toString().replace(/\|"/g, ""),
 	ua_browser = userAgent.indexOf("Chrome") > -1 ? "chrome" : userAgent.indexOf("Safari") > -1 ? "safari" : userAgent.indexOf("Firefox") > -1 ? "firefox" : "ie";
-	init('footlocker', userAgent, ua_browser, undefined, undefined)
+	init('yeezysupply', userAgent, ua_browser, undefined, undefined)
 });
 
 async function init(site, userAgent, ua_browser, proxy, abck, post_url, cookieJar){
@@ -76,15 +76,18 @@ function get_abck(site, bmak, userAgent, ua_browser, formInfo, proxy) {
 		req = net.request({
 			method: "GET",
 			url: site.url,
-			session: akamaiSession
+			session: akamaiSession,
+			useSessionCookies: true,
+			hostname: site.host,
+			headers: {
+				'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+				'user-agent': userAgent,
+				'sec-fetch-site': 'none',
+				'sec-fetch-mode': 'navigate',
+				'accept-encoding': 'gzip, deflate, br',
+				'accept-language': 'en-US,en;q=0.9'
+			}
 		});
-	
-	req.setHeader("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9")
-		.setHeader("user-agent", userAgent)
-		.setHeader("sec-fetch-site", "none")
-		.setHeader("sec-fetch-mode", "navigate")
-		.setHeader("accept-encoding", "gzip, deflate, br")
-		.setHeader("accept-language", "en-US,en;q=0.9");
 	akamaiSession.setUserAgent(userAgent);
 
 	req.on("response", (response) => {
@@ -94,7 +97,6 @@ function get_abck(site, bmak, userAgent, ua_browser, formInfo, proxy) {
 			var post_url_match = /src="\/(static|assets|api|resources|public)\/(\w+)/gm.exec(body);
 			if(post_url_match == null) return;
 			post_url = `${post_url_match[1]}/${post_url_match[2]}`;
-			logger.white(post_url)
 		});
 		response.on('end', () => {
 			akamaiSession.cookies.get({}).then((cookies) => {
@@ -110,8 +112,8 @@ function get_abck(site, bmak, userAgent, ua_browser, formInfo, proxy) {
 	// 	method: 'GET',
 	// 	url: site.url,
 	// 	headers: {
-	// 		...site.headers,
-	// 		'user-agent': userAgent,
+			// ...site.headers,
+			// 'user-agent': userAgent,
 	// 	},
 	// 	proxy: proxy !== undefined ? `http://${proxy}` : null,
 	// 	timeout: 2000,
@@ -190,81 +192,74 @@ async function sensorGen(bmak, abck, ua_browser, userAgent, proxy, site, post_ur
 		"-1,2,-94,-121,";
 	var sensor = gen_key(sensor_data);
 	logger.yellow(sensor);
-	return validator(sensor, abck, userAgent, ua_browser, proxy, site, post_url, cookieJar)
+	return validator(sensor, bmak, formInfo, userAgent, ua_browser, proxy, site, post_url, cookieJar)
 }
 
-function validator(sensor, abck, userAgent, ua_browser, proxy, site, post_url, cookieJar) {
-	let req = net.request({
-		method: "POST",
-		url: `https://${site.host}/${post_url}`,
-		session: akamaiSession,
-		body: {
-			sensor_data: sensor
-		}
-	});
+function validator(sensor, bmak, formInfo, userAgent, ua_browser, proxy, site, post_url, cookieJar) {
 
-	req.setHeader('Accept', '*/*')
-		.setHeader('accept-encoding', 'gzip, deflate, br')
-		.setHeader('accept-language', 'en-US,en;q=0.9')
-		.setHeader('Content-Type', 'application/json')
-		.setHeader('dnt', '1')
-		.setHeader('referer', site.url)
-		.setHeader('Connection', 'keep-alive')
-		.setHeader('Cache-Control', 'no-cache'); // todo: maybe change this?
-	// req.write(JSON.stringify({
-	// 	sensor_data: sensor
-	// }));
-
-	req.on("response", (response) => {
-		response.on("error", e => reject(e));
-		response.on('data', (chunk) => {
-			var body = chunk.toString('utf8');
-			var post_url_match = /src="\/(static|assets|api|resources|public)\/(\w+)/gm.exec(body);
-			if(post_url_match == null) return;
-			post_url = `${post_url_match[1]}/${post_url_match[2]}`;
-			logger.white(post_url)
+	var options = {
+		'method': 'POST',
+		'url': `https://${site.host}/${post_url}`, 
+		'session': akamaiSession,
+		'useSessionCookies': true,
+		'hostname': site.host,
+		headers: {
+			'sec-fetch-dest': 'empty',
+			'user-agent': userAgent,
+			'content-type': 'text/plain;charset=UTF-8',
+			'accept': '*/*',
+			'origin': `https://${site.host}`,
+			'sec-fetch-site': 'same-origin',
+			'sec-fetch-mode': 'cors',
+			'referer': site.url,
+			'accept-encoding': 'gzip, deflate, br',
+			'accept-language': 'en-US,en;q=0.9,fr;q=0.8,de;q=0.7'
+		},
+	  };
+	  
+	  var req = net.request(options, function (res) {
+		var chunks = [];
+	  
+		res.on("data", function (chunk) {
+		  chunks.push(chunk);
 		});
-		response.on('end', () => {
-			akamaiSession.cookies.get({}).then((cookies) => {
-				var abck = cookies.find(x => x.name === "_abck").value;
-				sensorGen(bmak, abck, ua_browser, userAgent, proxy, site, post_url, formInfo, cookieJar);
-			}).catch((e) => logger.red(e.message));
-		});
-	});
-
-	req.on("response", (response) => {
-		response.on("error", e => reject(e));
-		response.once('data', (chunk) => {
-			var body = chunk.toString('utf8');
-			logger.blue(body)
-		});
-		response.on('end', () => {
+	  
+		res.on("end", function (chunk) {
 			akamaiSession.cookies.get({}).then((cookies) => {
 				var abck = cookies.find(x => x.name === "_abck").value;
 				logger.white(`ABCK ${abck}`)
-				// init(site, userAgent, ua_browser, proxy, cookies[i].value, post_url, cookieJar);
+				init(site, userAgent, ua_browser, proxy, abck, post_url, cookieJar);
 			}).catch((e) => logger.red(e.message));
 		});
-	});
+	  
+		res.on("error", function (error) {
+		  console.error(error);
+		});
+	  });
+	  
+	var postData = `{\"sensor_data\":\"${sensor}\"}`;
+
+	req.write(postData);
+	  
 	req.end();
 
 	// var params = {
 	// 	method: 'POST',
 	// 	url: `https://${site.host}/${post_url}`,
 	// 	headers: {
-	// 		'Accept': '*/*',
-	// 		'Accept-Encoding': 'gzip, deflate, br',
-	// 		'Accept-Language': 'en-US,en;q=0.9',
-	// 		'Content-Type': 'application/json',
-	// 		'dnt': '1',
-	// 		'Host': site.host,
-	// 		'User-Agent': userAgent,
-	// 		'Connection': 'keep-alive',
-	// 		'Cache-Control': 'no-cache',
+			// 'Accept': '*/*',
+			// 'Accept-Encoding': 'gzip, deflate, br',
+			// 'Accept-Language': 'en-US,en;q=0.9',
+			// 'Content-Type': 'application/json',
+			// 'dnt': '1',
+			// 'Host': site.host,
+			// 'User-Agent': userAgent,
+			// 'Connection': 'keep-alive',
+			// 'Cache-Control': 'no-cache',
 	// 	},
-	// 	body: JSON.stringify({
-	// 		"sensor_data": sensor
-	// 	}),
+		// body: JSON.stringify({
+		// 	"sensor_data": sensor
+		// }),
 	// 	proxy: proxy !== undefined ? `http://${proxy}` : null,
 	// 	timeout: 2000,
 	// 	jar: cookieJar,
