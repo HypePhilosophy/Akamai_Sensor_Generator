@@ -15,17 +15,16 @@ const UserAgent = require('user-agents'),
 	uuidv4 = require('uuid/v4'),
 	websites = require('./websites.json'),
 	logger = require("./libs/logger"),
-	proxies = fs.readFileSync('./proxy.txt', 'utf-8').toString().toLowerCase().split("\r\n").filter(l => l.length !== 0);
+	proxies = fs.readFileSync('./proxy.txt', 'utf-8').toString().toLowerCase().split("\r\n").filter(l => l.length !== 0),
+	{app, session, net} = require('electron');
 
-	var {app, session, net} = require('electron')
-	let akamaiSession;
-
-	app.on('ready', () => {
-		akamaiSession = session.fromPartition('akamai', {cache: false});
-		var userAgent = (new UserAgent(/Chrome/, {deviceCategory: 'desktop'})).toString().replace(/\|"/g, ""),
-		ua_browser = userAgent.indexOf("Chrome") > -1 ? "chrome" : userAgent.indexOf("Safari") > -1 ? "safari" : userAgent.indexOf("Firefox") > -1 ? "firefox" : "ie";
-		init('footlocker', userAgent, ua_browser, undefined, undefined)
-	})
+let akamaiSession;
+app.on('ready', () => {
+	akamaiSession = session.fromPartition('akamai', {cache: false});
+	var userAgent = (new UserAgent(/Chrome/, {deviceCategory: 'desktop'})).toString().replace(/\|"/g, ""),
+	ua_browser = userAgent.indexOf("Chrome") > -1 ? "chrome" : userAgent.indexOf("Safari") > -1 ? "safari" : userAgent.indexOf("Firefox") > -1 ? "firefox" : "ie";
+	init('footlocker', userAgent, ua_browser, undefined, undefined)
+});
 
 async function init(site, userAgent, ua_browser, proxy, abck, post_url, cookieJar){
 	var site = (abck == null) ? websites.find(w => w.name === site) : site,
@@ -36,7 +35,6 @@ async function init(site, userAgent, ua_browser, proxy, abck, post_url, cookieJa
 			xagg: -1,
 			pen: -1,
 			fpValstr: "",
-			brow: "",
 			psub: "-",
 			lang: "-",
 			prod: "-",
@@ -54,8 +52,6 @@ async function init(site, userAgent, ua_browser, proxy, abck, post_url, cookieJa
 			doe_vel: 0,
 			dme_vel: 0,
 			doe_cnt: 0,
-			doe_cnt_lmt: 10,
-			doa_throttle: 0,
 			aj_type: 0,
 			aj_indx: 0,
 			pe_cnt: 0,
@@ -76,25 +72,23 @@ async function init(site, userAgent, ua_browser, proxy, abck, post_url, cookieJa
 }
 
 function get_abck(site, bmak, userAgent, ua_browser, formInfo, proxy) {
-	var post_url;
-	let req = net.request({
-		method: "GET",
-		url: site.url,
-		session: akamaiSession
-	  });
+	var post_url,
+		req = net.request({
+			method: "GET",
+			url: site.url,
+			session: akamaiSession
+		});
 	
-	req.setHeader("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9");
-	req.setHeader("user-agent", userAgent);
-	req.setHeader("sec-fetch-site", "none");
-	req.setHeader("sec-fetch-mode", "navigate"); // todo: maybe change this?
-	req.setHeader("accept-encoding", "gzip, deflate, br");
-	req.setHeader("accept-language", "en-US,en;q=0.9");
+	req.setHeader("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9")
+		.setHeader("user-agent", userAgent)
+		.setHeader("sec-fetch-site", "none")
+		.setHeader("sec-fetch-mode", "navigate")
+		.setHeader("accept-encoding", "gzip, deflate, br")
+		.setHeader("accept-language", "en-US,en;q=0.9");
 	akamaiSession.setUserAgent(userAgent);
 
 	req.on("response", (response) => {
-		response.on("error", err => {
-		reject(err);
-		});
+		response.on("error", e => reject(e));
 		response.on('data', (chunk) => {
 			var body = chunk.toString('utf8');
 			var post_url_match = /src="\/(static|assets|api|resources|public)\/(\w+)/gm.exec(body);
@@ -103,23 +97,15 @@ function get_abck(site, bmak, userAgent, ua_browser, formInfo, proxy) {
 			logger.white(post_url)
 		});
 		response.on('end', () => {
-		  akamaiSession.cookies.get({})
-		  .then((cookies) => {
-			for(let i = 0; i<cookies.length; i++){
-			  if(cookies[i].name == "_abck"){
-				//   logger.white('abck ' + cookies[i].value)
-				  var abck = cookies[i].value;
-				  sensorGen(bmak, abck, ua_browser, userAgent, proxy, site, post_url, formInfo, cookieJar);
-
-			  }
-			}
-		  }).catch((error) => {
-		  console.log(error)
-		  })
-		})
-	  });
-	 req.end();
+			akamaiSession.cookies.get({}).then((cookies) => {
+				var abck = cookies.find(x => x.name === "_abck").value;
+				sensorGen(bmak, abck, ua_browser, userAgent, proxy, site, post_url, formInfo, cookieJar);
+			}).catch((e) => logger.red(e.message));
+		});
+	});
+	req.end();
 	var cookieJar = new rp.jar();
+
 	// var params = {
 	// 	method: 'GET',
 	// 	url: site.url,
@@ -217,42 +203,50 @@ function validator(sensor, abck, userAgent, ua_browser, proxy, site, post_url, c
 		}
 	});
 
-	req.setHeader('Accept', '*/*');
-	req.setHeader('accept-encoding', 'gzip, deflate, br');
-	req.setHeader('accept-language', 'en-US,en;q=0.9');
-	req.setHeader('Content-Type', 'application/json');
-	req.setHeader('dnt', '1');
-	req.setHeader('referer', site.url);
-	req.setHeader('Connection', 'keep-alive');
-	req.setHeader('Cache-Control', 'no-cache'); // todo: maybe change this?
+	req.setHeader('Accept', '*/*')
+		.setHeader('accept-encoding', 'gzip, deflate, br')
+		.setHeader('accept-language', 'en-US,en;q=0.9')
+		.setHeader('Content-Type', 'application/json')
+		.setHeader('dnt', '1')
+		.setHeader('referer', site.url)
+		.setHeader('Connection', 'keep-alive')
+		.setHeader('Cache-Control', 'no-cache'); // todo: maybe change this?
 	// req.write(JSON.stringify({
 	// 	sensor_data: sensor
 	// }));
 
 	req.on("response", (response) => {
-		response.on("error", err => {
-		reject(err);
+		response.on("error", e => reject(e));
+		response.on('data', (chunk) => {
+			var body = chunk.toString('utf8');
+			var post_url_match = /src="\/(static|assets|api|resources|public)\/(\w+)/gm.exec(body);
+			if(post_url_match == null) return;
+			post_url = `${post_url_match[1]}/${post_url_match[2]}`;
+			logger.white(post_url)
 		});
+		response.on('end', () => {
+			akamaiSession.cookies.get({}).then((cookies) => {
+				var abck = cookies.find(x => x.name === "_abck").value;
+				sensorGen(bmak, abck, ua_browser, userAgent, proxy, site, post_url, formInfo, cookieJar);
+			}).catch((e) => logger.red(e.message));
+		});
+	});
+
+	req.on("response", (response) => {
+		response.on("error", e => reject(e));
 		response.once('data', (chunk) => {
 			var body = chunk.toString('utf8');
 			logger.blue(body)
-			
 		});
 		response.on('end', () => {
-		  akamaiSession.cookies.get({})
-		  .then((cookies) => {
-			for(let i = 0; i<cookies.length; i++){
-			  if(cookies[i].name == "_abck"){
-				  logger.white('abck ' + cookies[i].value)
-					// init(site, userAgent, ua_browser, proxy, cookies[i].value, post_url, cookieJar);
-			  }
-			}
-		  }).catch((error) => {
-		  console.log(error)
-		  })
-		})
-	  });
-	 req.end();
+			akamaiSession.cookies.get({}).then((cookies) => {
+				var abck = cookies.find(x => x.name === "_abck").value;
+				logger.white(`ABCK ${abck}`)
+				// init(site, userAgent, ua_browser, proxy, cookies[i].value, post_url, cookieJar);
+			}).catch((e) => logger.red(e.message));
+		});
+	});
+	req.end();
 
 	// var params = {
 	// 	method: 'POST',
