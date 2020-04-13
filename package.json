@@ -1,0 +1,36 @@
+{
+  "name": "Akamai-Sensor-Generator",
+  "version": "1.0.0",
+  "description": "Akamai Sensor Generator",
+  "scripts": {
+    "electron": "electron .",
+    "start": "node --no-warnings index.js",
+    "test": "node test.js",
+    "server": "node ./app/index.js"
+  },
+  "main": "index.js",
+  "repository": "https://github.com/HypePhilosophy/Akamai-Sensor-Generator.git",
+  "author": "Jeff Mao",
+  "license": "MIT",
+  "dependencies": {
+    "chalk": "^3.0.0",
+    "cloudscraper": "^4.6.0",
+    "cors": "^2.8.5",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "fs": "0.0.1-security",
+    "helmet": "^3.21.2",
+    "jsdom": "^16.2.2",
+    "mongoose": "^5.8.7",
+    "morgan": "^1.9.1",
+    "perf_hooks": "0.0.1",
+    "randomstring": "^1.1.5",
+    "request": "^2.88.0",
+    "request-promise": "^4.2.5",
+    "user-agents": "^1.0.491",
+    "uuid": "^3.4.0"
+  },
+  "devDependencies": {
+    "electron": "^8.2.1"
+  }
+}

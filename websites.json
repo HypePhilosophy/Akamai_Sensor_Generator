@@ -1,0 +1,280 @@
+[
+	{
+		"name":"dicks",
+		"ver":"1.54",
+		"url":"https://www.dickssportinggoods.com/",
+		"host":"www.dickssportinggoods.com",
+		"headers":{
+			"accept":"text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+			"accept-encoding":"gzip, deflate, br",
+			"accept-language":"en-US,en;q=0.9",
+			"dnt":"1",
+			"sec-fetch-mode":"navigate",
+			"sec-fetch-site":"none",
+			"sec-fetch-user":"?1",
+			"upgrade-insecure-requests":"1",
+			"Host":"www.dickssportinggoods.com",
+			"Connection":"keep-alive"
+        },
+        "valid_check": ["~0~", "=="]
+	},
+	{
+		"name":"dell",
+		"ver":"1.54",
+		"url":"https://www.dell.com/support/orders/hr/en/hrbsdt1?NoRedirect=true",
+		"host":"www.dell.com",
+		"headers":{
+			"accept":"text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+			"accept-encoding":"gzip, deflate, br",
+			"accept-language":"en-US,en;q=0.9",
+			"dnt":"1",
+			"sec-fetch-mode":"navigate",
+			"sec-fetch-site":"none",
+			"sec-fetch-user":"?1",
+			"upgrade-insecure-requests":"1",
+			"Host":"www.dell.com",
+			"Connection":"keep-alive"
+        },
+        "valid_check": ["~0~", "=~-1"]
+	},
+	{
+		"name":"yeezysupply",
+		"ver":"1.54",
+		"url":"https://www.yeezysupply.com/",
+		"host":"www.yeezysupply.com",
+		"headers":{
+			"accept":"text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+			"accept-encoding":"gzip, deflate, br",
+			"accept-language":"en-US,en;q=0.9",
+			"dnt":"1",
+			"sec-fetch-mode":"navigate",
+			"sec-fetch-site":"none",
+			"sec-fetch-user":"?1",
+			"upgrade-insecure-requests":"1",
+			"Host":"www.yeezysupply.com",
+			"Connection":"keep-alive",
+			"Cache-Control":"no-cache"
+		},
+        "valid_check": ["=="]
+	},
+	{
+		"name":"gamestop",
+		"ver":"1.54",
+		"url":"https://www.gamestop.com/",
+		"host":"www.gamestop.com",
+		"headers":{
+			"accept":"text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+			"accept-encoding":"gzip, deflate, br",
+			"accept-language":"en-US,en;q=0.9",
+			"dnt":"1",
+			"sec-fetch-mode":"navigate",
+			"sec-fetch-site":"none",
+			"sec-fetch-user":"?1",
+			"upgrade-insecure-requests":"1",
+			"Host":"www.gamestop.com",
+			"Connection":"keep-alive",
+			"Cache-Control":"no-cache"
+		},
+        "valid_check": ["=="]
+	},
+	{
+		"name":"costa",
+		"ver":"1.54",
+		"url":"https://www.costa.co.uk/",
+		"host":"www.costa.co.uk",
+		"headers":{
+			"accept":"text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+			"accept-encoding":"gzip, deflate, br",
+			"accept-language":"en-US,en;q=0.9",
+			"dnt":"1",
+			"sec-fetch-mode":"navigate",
+			"sec-fetch-site":"none",
+			"sec-fetch-user":"?1",
+			"upgrade-insecure-requests":"1",
+			"Host":"www.costa.co.uk",
+			"Connection":"keep-alive",
+			"Cache-Control":"no-cache"
+        },
+        "valid_check": ["~0~", "=~-"]
+	},
+	{
+		"name":"footpatrol",
+		"ver":"1.54",
+		"url":"https://www.footpatrol.com/",
+		"host":"www.footpatrol.com",
+		"headers":{
+			"accept":"text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+			"accept-encoding":"gzip, deflate, br",
+			"accept-language":"en-US,en;q=0.9",
+			"dnt":"1",
+			"sec-fetch-mode":"navigate",
+			"sec-fetch-site":"none",
+			"sec-fetch-user":"?1",
+			"upgrade-insecure-requests":"1",
+			"Host":"www.footpatrol.com",
+			"Connection":"keep-alive",
+			"Cache-Control":"no-cache"
+		},
+        "valid_check": []
+	},
+	{
+		"name":"jdsports",
+		"ver":"1.54",
+		"url":"https://www.jdsports.co.uk/",
+		"host":"www.jdsports.co.uk",
+		"headers":{
+			"accept":"*/*",
+			"accept-encoding":"gzip, deflate, br",
+			"accept-language":"en-US,en;q=0.9",
+			"dnt":"1",
+			"sec-fetch-mode":"navigate",
+			"sec-fetch-site":"none",
+			"sec-fetch-user":"?1",
+			"upgrade-insecure-requests":"1",
+			"Host":"www.jdsports.co.uk",
+			"Connection":"keep-alive",
+			"Cache-Control":"no-cache"
+		},
+        "valid_check": ["~-1~", "="]
+	},
+	{
+		"name":"footlocker",
+		"ver":"1.54",
+		"url":"https://www.footlocker.com/",
+		"host":"www.footlocker.com",
+		"headers":{
+			"accept":"text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+			"accept-encoding":"gzip, deflate, br",
+			"accept-language":"en-US,en;q=0.9",
+			"dnt":"1",
+			"sec-fetch-mode":"navigate",
+			"sec-fetch-site":"none",
+			"sec-fetch-user":"?1",
+			"upgrade-insecure-requests":"1",
+			"Host":"www.footlocker.com",
+			"Connection":"keep-alive",
+			"Cache-Control":"no-cache"
+		},
+        "valid_check": ["~0~"]
+	},
+	{
+		"name":"footlockeruk",
+		"ver":"1.54",
+		"url":"https://www.footlocker.co.uk/en/homepage",
+		"host":"www.footlocker.co.uk",
+		"headers":{
+			"accept":"text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+			"accept-encoding":"gzip, deflate, br",
+			"accept-language":"en-US,en;q=0.9",
+			"dnt":"1",
+			"sec-fetch-mode":"navigate",
+			"sec-fetch-site":"none",
+			"sec-fetch-user":"?1",
+			"upgrade-insecure-requests":"1",
+			"Host":"www.footlocker.co.uk",
+			"Connection":"keep-alive",
+			"Cache-Control":"no-cache"
+		},
+        "valid_check": []
+	},
+	{
+		"name":"champssports",
+		"ver":"1.54",
+		"url":"https://www.champssports.com/",
+		"host":"www.champssports.com",
+		"headers":{
+			"accept":"text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+			"accept-encoding":"gzip, deflate, br",
+			"accept-language":"en-US,en;q=0.9",
+			"dnt":"1",
+			"sec-fetch-mode":"navigate",
+			"sec-fetch-site":"none",
+			"sec-fetch-user":"?1",
+			"upgrade-insecure-requests":"1",
+			"Host":"www.champssports.com",
+			"Connection":"keep-alive",
+			"Cache-Control":"no-cache"
+		},
+        "valid_check": ["~0~"]
+	},
+	{
+		"name":"footaction",
+		"ver":"1.54",
+		"url":"https://www.footaction.com/",
+		"host":"www.footaction.com",
+		"headers":{
+			"accept":"text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+			"accept-encoding":"gzip, deflate, br",
+			"accept-language":"en-US,en;q=0.9",
+			"dnt":"1",
+			"sec-fetch-mode":"navigate",
+			"sec-fetch-site":"none",
+			"sec-fetch-user":"?1",
+			"upgrade-insecure-requests":"1",
+			"Host":"www.footaction.com",
+			"Connection":"keep-alive",
+			"Cache-Control":"no-cache"
+		},
+        "valid_check": ["~0~"]
+	},
+	{
+		"name":"eastbay",
+		"ver":"1.54",
+		"url":"https://www.eastbay.com/",
+		"host":"www.eastbay.com",
+		"headers":{
+			"accept":"text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+			"accept-encoding":"gzip, deflate, br",
+			"accept-language":"en-US,en;q=0.9",
+			"dnt":"1",
+			"sec-fetch-mode":"navigate",
+			"sec-fetch-site":"none",
+			"sec-fetch-user":"?1",
+			"upgrade-insecure-requests":"1",
+			"Host":"www.eastbay.com",
+			"Connection":"keep-alive",
+			"Cache-Control":"no-cache"
+		},
+        "valid_check": ["~0~"]
+	},
+	{
+		"name":"kidsfootlocker",
+		"ver":"1.54",
+		"url":"https://www.kidsfootlocker.com/",
+		"host":"www.kidsfootlocker.com",
+		"headers":{
+			"accept":"text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+			"accept-encoding":"gzip, deflate, br",
+			"accept-language":"en-US,en;q=0.9",
+			"dnt":"1",
+			"sec-fetch-mode":"navigate",
+			"sec-fetch-site":"none",
+			"sec-fetch-user":"?1",
+			"upgrade-insecure-requests":"1",
+			"Host":"www.kidsfootlocker.com",
+			"Connection":"keep-alive",
+			"Cache-Control":"no-cache"
+		},
+        "valid_check": ["~0~"]
+	},
+	{
+		"name":"panera",
+		"ver":"1.54",
+		"url":"https://www.panerabread.com/en-us/home.html",
+		"host":"www.panerabread.com",
+		"headers":{
+			"accept":"text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+			"accept-encoding":"gzip, deflate, br",
+			"accept-language":"en-US,en;q=0.9",
+			"dnt":"1",
+			"sec-fetch-mode":"navigate",
+			"sec-fetch-site":"none",
+			"sec-fetch-user":"?1",
+			"upgrade-insecure-requests":"1",
+			"Host":"www.panerabread.com",
+			"Connection":"keep-alive",
+			"Cache-Control":"no-cache"
+		},
+        "valid_check": ["~-1~", "=="]
+	}
+]

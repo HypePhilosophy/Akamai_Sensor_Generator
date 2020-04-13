@@ -1,0 +1,44 @@
+version: "3.7"
+services:
+  app:
+    container_name: akamai-server-api
+    image: akamai-gen_app:latest
+    build: 
+      context: .
+      dockerfile: Dockerfile
+      args: 
+        - IMAGE_VERSION=latest
+    restart: always
+    environment: 
+      MONGO_URI: ${MONGO_URI}
+      ADMIN_SECRET: ${ADMIN_SECRET}
+    ports:
+      - "80:3000"
+    networks: 
+      - backend
+    depends_on:
+      - "mongodb"
+    links:
+      - mongodb
+    command: ["npm", "run", "server"]
+  mongodb:
+    container_name: mongo
+    restart: always
+    image: mongo:latest
+    environment: 
+      MONGO_URI: ${MONGO_URI}
+      MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE}
+    volumes: 
+      - mongodb:/data/db
+      - mongodb_config:/data/configdb
+    networks: 
+      - backend
+    ports:
+      - "27017:27017"
+
+networks: 
+  backend:
+
+volumes: 
+  mongodb:
+  mongodb_config:
