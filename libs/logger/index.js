@@ -3,7 +3,7 @@ Logger.prototype.green = function success(message) {
     console.log(`[${new Date().toISOString()}] \x1b[32m${message}\x1b[0m`);
 };
 Logger.prototype.purple = function success(message) {
-    console.log(`[${new Date().toISOString()}] \x1b[45m${message}\x1b[0m`);
+    console.log(`[${new Date().toISOString()}] \x1b[35m${message}\x1b[0m`);
 };
 Logger.prototype.red = function error(message) {
     console.log(`[${new Date().toISOString()}] \x1b[31m${message}\x1b[0m`);

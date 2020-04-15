@@ -16,7 +16,8 @@
 			"Host":"www.dickssportinggoods.com",
 			"Connection":"keep-alive"
         },
-        "valid_check": ["~0~", "=="]
+		"valid_check": ["~0~", "=="],
+		"error_page": null
 	},
 	{
 		"name":"zalandouk",
@@ -35,12 +36,13 @@
 			"Host":"www.zalando.co.uk",
 			"Connection":"keep-alive"
         },
-        "valid_check": ["~-1~", "=~-1"]
+        "valid_check": ["~-1~", "=~-1"],
+		"error_page": null
 	},
 	{
 		"name":"dell",
 		"ver":"1.54",
-		"url":"https://www.dell.com/support/orders/hr/en/hrbsdt1?NoRedirect=true",
+		"url":"https://www.dell.com/support/orders/us/en/usbsdt1?NoRedirect=true",
 		"host":"www.dell.com",
 		"headers":{
 			"accept":"text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
@@ -54,7 +56,8 @@
 			"Host":"www.dell.com",
 			"Connection":"keep-alive"
         },
-        "valid_check": ["~0~", "=~-1"]
+        "valid_check": ["~0~", "=~-1"],
+		"error_page": "https://www.dell.com/support/orders/us/en/19/Invoice"
 	},
 	{
 		"name":"yeezysupply",
@@ -74,7 +77,8 @@
 			"Connection":"keep-alive",
 			"Cache-Control":"no-cache"
 		},
-        "valid_check": ["=="]
+        "valid_check": ["=="],
+		"error_page": null
 	},
 	{
 		"name":"gamestop",
@@ -94,7 +98,8 @@
 			"Connection":"keep-alive",
 			"Cache-Control":"no-cache"
 		},
-        "valid_check": ["=="]
+        "valid_check": ["=="],
+		"error_page": null
 	},
 	{
 		"name":"costa",
@@ -114,7 +119,8 @@
 			"Connection":"keep-alive",
 			"Cache-Control":"no-cache"
         },
-        "valid_check": ["~0~", "=~-"]
+        "valid_check": ["~0~", "=~-"],
+		"error_page": null
 	},
 	{
 		"name":"footpatrol",
@@ -134,7 +140,8 @@
 			"Connection":"keep-alive",
 			"Cache-Control":"no-cache"
 		},
-        "valid_check": []
+        "valid_check": [],
+		"error_page": null
 	},
 	{
 		"name":"jdsports",
@@ -154,7 +161,8 @@
 			"Connection":"keep-alive",
 			"Cache-Control":"no-cache"
 		},
-        "valid_check": ["~-1~", "="]
+        "valid_check": ["~-1~", "="],
+		"error_page": null
 	},
 	{
 		"name":"footlocker",
@@ -174,7 +182,8 @@
 			"Connection":"keep-alive",
 			"Cache-Control":"no-cache"
 		},
-        "valid_check": ["~0~"]
+        "valid_check": ["~0~"],
+		"error_page": null
 	},
 	{
 		"name":"footlockeruk",
@@ -194,7 +203,8 @@
 			"Connection":"keep-alive",
 			"Cache-Control":"no-cache"
 		},
-        "valid_check": []
+        "valid_check": [],
+		"error_page": null
 	},
 	{
 		"name":"champssports",
@@ -214,7 +224,8 @@
 			"Connection":"keep-alive",
 			"Cache-Control":"no-cache"
 		},
-        "valid_check": ["~0~"]
+        "valid_check": ["~0~"],
+		"error_page": null
 	},
 	{
 		"name":"footaction",
@@ -234,7 +245,8 @@
 			"Connection":"keep-alive",
 			"Cache-Control":"no-cache"
 		},
-        "valid_check": ["~0~"]
+        "valid_check": ["~0~"],
+		"error_page": null
 	},
 	{
 		"name":"eastbay",
@@ -254,7 +266,8 @@
 			"Connection":"keep-alive",
 			"Cache-Control":"no-cache"
 		},
-        "valid_check": ["~0~"]
+        "valid_check": ["~0~"],
+		"error_page": null
 	},
 	{
 		"name":"kidsfootlocker",
@@ -274,7 +287,8 @@
 			"Connection":"keep-alive",
 			"Cache-Control":"no-cache"
 		},
-        "valid_check": ["~0~"]
+        "valid_check": ["~0~"],
+		"error_page": null
 	},
 	{
 		"name":"panera",
@@ -294,6 +308,7 @@
 			"Connection":"keep-alive",
 			"Cache-Control":"no-cache"
 		},
-        "valid_check": ["~-1~", "=="]
+        "valid_check": ["~-1~", "=="],
+		"error_page": null
 	}
 ]

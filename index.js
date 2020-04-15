@@ -23,7 +23,7 @@ app.on('ready', () => {
 	akamaiSession = session.fromPartition('akamai', {cache: false});
 	var userAgent = (new UserAgent(/Chrome/, {deviceCategory: 'desktop'})).toString().replace(/\|"/g, ""),
 	ua_browser = userAgent.indexOf("Chrome") > -1 ? "chrome" : userAgent.indexOf("Safari") > -1 ? "safari" : userAgent.indexOf("Firefox") > -1 ? "firefox" : "ie";
-	init('zalandouk', userAgent, ua_browser, undefined, undefined)
+	init('dell', userAgent, ua_browser, undefined, undefined)
 });
 
 async function init(site, userAgent, ua_browser, proxy, abck, post_url, cookieJar){
@@ -774,10 +774,11 @@ function cdma(bmak) {
 };
 
 async function getforminfo(site, userAgent, proxy) {
-	var a = "";
+	var a = "",
+		error_url = (site.error_page != null) ? site.error_page : `https://${site.host}/${randomstring.generate({length: 5,charset: 'alphabetic'})}`;
 	var params = {
 		method: 'GET',
-		url: `https://${site.host}/${randomstring.generate({length: 5,charset: 'alphabetic'})}`,
+		url: error_url,
 		headers: {
 			...site.headers,
 			'user-agent': userAgent
