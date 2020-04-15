@@ -16,14 +16,19 @@ const UserAgent = require('user-agents'),
 	websites = require('./websites.json'),
 	logger = require("./libs/logger"),
 	proxies = fs.readFileSync('./proxy.txt', 'utf-8').toString().toLowerCase().split("\r\n").filter(l => l.length !== 0),
-	{app, session, net} = require('electron');
+	{app, session, net} = require('electron'),
+	originalConsoleError = console.error;
+console.error = (e) => {
+	if (lodash.startsWith(e, '[vuex] unknown') || lodash.startsWith(e, 'Error: Could not parse CSS stylesheet')) return;
+	originalConsoleError(e)
+}
 let cookie_counter = 0,
 	akamaiSession;
 app.on('ready', () => {
 	akamaiSession = session.fromPartition('akamai', {cache: false});
 	var userAgent = (new UserAgent(/Chrome/, {deviceCategory: 'desktop'})).toString().replace(/\|"/g, ""),
 	ua_browser = userAgent.indexOf("Chrome") > -1 ? "chrome" : userAgent.indexOf("Safari") > -1 ? "safari" : userAgent.indexOf("Firefox") > -1 ? "firefox" : "ie";
-	init('dell', userAgent, ua_browser, undefined, undefined)
+	init('costa', userAgent, ua_browser, undefined, undefined)
 });
 
 async function init(site, userAgent, ua_browser, proxy, abck, post_url, cookieJar){
@@ -772,7 +777,6 @@ function cdma(bmak) {
 		return bmak.dmact;
 	} catch (a) { }
 };
-
 async function getforminfo(site, userAgent, proxy) {
 	var a = "",
 		error_url = (site.error_page != null) ? site.error_page : `https://${site.host}/${randomstring.generate({length: 5,charset: 'alphabetic'})}`;
