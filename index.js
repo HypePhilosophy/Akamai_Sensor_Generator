@@ -227,9 +227,10 @@ app.on('ready', () => {
 				'origin': `https://${site.host}`,
 				'sec-fetch-site': 'same-origin',
 				'sec-fetch-mode': 'cors',
-				'referer': site.url,
+				'referer': `https://${site.host}/`,
 				'accept-encoding': 'gzip, deflate, br',
-				'accept-language': 'en-US,en;q=0.9,fr;q=0.8,de;q=0.7'
+				'accept-language': 'en-US,en;q=0.9,fr;q=0.8,de;q=0.7',
+				'dnt': '1'
 			},
 		};
 		
@@ -237,7 +238,7 @@ app.on('ready', () => {
 			var chunks = [];
 		
 			res.on("data", function (chunk) {
-			chunks.push(chunk);
+				chunks.push(chunk);
 			});
 		
 			res.on("end", function (chunk) {
