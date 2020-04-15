@@ -24,10 +24,12 @@
     "jsdom": "^16.2.2",
     "mongoose": "^5.8.7",
     "morgan": "^1.9.1",
+    "path": "^0.12.7",
     "perf_hooks": "0.0.1",
     "randomstring": "^1.1.5",
     "request": "^2.88.0",
     "request-promise": "^4.2.5",
+    "url": "^0.11.0",
     "user-agents": "^1.0.491",
     "uuid": "^3.4.0"
   },
