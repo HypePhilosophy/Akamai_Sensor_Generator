@@ -16,7 +16,7 @@ const UserAgent = require('user-agents'),
 	websites = require('./websites.json'),
 	logger = require("./libs/logger"),
 	proxies = fs.readFileSync('./proxy.txt', 'utf-8').toString().toLowerCase().split("\r\n").filter(l => l.length !== 0),
-	{app, session, net} = require('electron'),
+	{app, session, net, BrowserWindow} = require('electron'),
 	originalConsoleError = console.error;
 console.error = (e) => {
 	if (lodash.startsWith(e, '[vuex] unknown') || lodash.startsWith(e, 'Error: Could not parse CSS stylesheet')) return;
@@ -24,15 +24,21 @@ console.error = (e) => {
 }
 let cookie_counter = 0,
 	akamaiSession;
+
 app.on('ready', () => {
+	let win = new BrowserWindow({'show': true})
+	win.webContents.executeJavaScript('alert("this is a test!");')
+	win.on('closed', () => {
+	win = null
+	});
 	akamaiSession = session.fromPartition('akamai', {cache: false});
 	var userAgent = (new UserAgent(/Chrome/, {deviceCategory: 'desktop'})).toString().replace(/\|"/g, ""),
 	ua_browser = userAgent.indexOf("Chrome") > -1 ? "chrome" : userAgent.indexOf("Safari") > -1 ? "safari" : userAgent.indexOf("Firefox") > -1 ? "firefox" : "ie";
-	init('dell', userAgent, ua_browser, undefined, undefined)
+	init('sony', userAgent, ua_browser, undefined, undefined)
 });
 
 async function init(site, userAgent, ua_browser, proxy, abck, post_url, cookieJar){
-	getmr()
+	// getmr()
 	var site = (abck == null) ? websites.find(w => w.name === site) : site,
 		bmak = {
 			ver: site.ver,
@@ -248,6 +254,8 @@ function validator(sensor, bmak, formInfo, userAgent, ua_browser, proxy, site, p
 	var postData = `{\"sensor_data\":\"${sensor}\"}`;
 
 	req.write(postData);
+
+	logger.yellow(sensor)
 	  
 	req.end();
 
