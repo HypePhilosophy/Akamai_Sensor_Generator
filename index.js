@@ -776,6 +776,7 @@ app.on('ready', () => {
 			return bmak.dmact;
 		} catch (a) { }
 	};
+	
 	async function getforminfo(site, userAgent, proxy) {
 		var a = "",
 			error_url = (site.error_page != null) ? site.error_page : `https://${site.host}/${randomstring.generate({length: 5,charset: 'alphabetic'})}`;
