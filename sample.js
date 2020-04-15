@@ -748,7 +748,7 @@ var _cf = _cf || [],
         call_gp: function () {
             var a;
             void 0 !== window.XMLHttpRequest ? a = new XMLHttpRequest : void 0 !== window.XDomainRequest ? (a = new XDomainRequest, a.onload = function () {
-                this.readyState = 4, this.onreadystatechangeinstanceof Function && this.onreadystatechange()
+                this.readyState = 4, this.onreadystatechange instanceof Function && this.onreadystatechange()
             }) : a = new ActiveXObject("Microsoft\.XMLHTTP"), a.open("GET", bmak.params_url, true), a.onreadystatechange = function () {
                 a.readyState > 3 && bmak.parse_gp && bmak.parse_gp(a)
             }, a.send()
@@ -764,7 +764,7 @@ var _cf = _cf || [],
         apicall_bm: function (a, t, e) {
             var n;
             void 0 !== window.XMLHttpRequest ? n = new XMLHttpRequest : void 0 !== window.XDomainRequest ? (n = new XDomainRequest, n.onload = function () {
-                this.readyState = 4, this.onreadystatechangeinstanceof Function && this.onreadystatechange()
+                this.readyState = 4, this.onreadystatechange instanceof Function && this.onreadystatechange()
             }) : n = new ActiveXObject("Microsoft\.XMLHTTP"), n.open("POST", a, t), void 0 !== n.withCredentials && (n.withCredentials = true);
             var o = '\{"sensor_data":"' + bmak.sensor_data + '"\}';
             n.onreadystatechange = function () {

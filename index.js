@@ -15,10 +15,10 @@ const UserAgent = require('user-agents'),
 	uuidv4 = require('uuid/v4'),
 	websites = require('./websites.json'),
 	logger = require("./libs/logger"),
-	proxies = fs.readFileSync('./proxy.txt', 'utf-8').toString().toLowerCase().split("\r\n").filter(l => l.length !== 0);
-	const {app, session, net} = require('electron');
-
-let akamaiSession;
+	proxies = fs.readFileSync('./proxy.txt', 'utf-8').toString().toLowerCase().split("\r\n").filter(l => l.length !== 0),
+	{app, session, net} = require('electron');
+let cookie_counter = 0,
+	akamaiSession;
 app.on('ready', () => {
 	akamaiSession = session.fromPartition('akamai', {cache: false});
 	var userAgent = (new UserAgent(/Chrome/, {deviceCategory: 'desktop'})).toString().replace(/\|"/g, ""),
@@ -27,6 +27,7 @@ app.on('ready', () => {
 });
 
 async function init(site, userAgent, ua_browser, proxy, abck, post_url, cookieJar){
+	getmr()
 	var site = (abck == null) ? websites.find(w => w.name === site) : site,
 		bmak = {
 			ver: site.ver,
@@ -191,7 +192,7 @@ async function sensorGen(bmak, abck, ua_browser, userAgent, proxy, site, post_ur
 		w +
 		"-1,2,-94,-121,";
 	var sensor = gen_key(sensor_data);
-	logger.yellow(sensor);
+	//logger.yellow(sensor);
 	return validator(sensor, bmak, formInfo, userAgent, ua_browser, proxy, site, post_url, cookieJar)
 }
 
@@ -227,7 +228,9 @@ function validator(sensor, bmak, formInfo, userAgent, ua_browser, proxy, site, p
 		res.on("end", function (chunk) {
 			akamaiSession.cookies.get({}).then((cookies) => {
 				var abck = cookies.find(x => x.name === "_abck").value;
-				logger.white(`ABCK ${abck}`)
+				var verify = verify_abck(abck, site, true);
+				verify.success ? logger.green(JSON.stringify(verify)) : logger.red(JSON.stringify(verify));
+				//app.exit(0)
 				init(site, userAgent, ua_browser, proxy, abck, post_url, cookieJar);
 			}).catch((e) => logger.red(e.message));
 		});
@@ -526,7 +529,7 @@ function rir(a, t, e, n) {
 /**
  * @description Gets the date when the sensor is genned
  * @param {boolean} start
- * @returns
+ * @returns Date
  */
 function get_cf_date(start) {
 	if (Date.now) {
@@ -625,9 +628,11 @@ function dmact(bmak){
  * @param {string} site - website
  * @returns {object} object
  */
-function verify_abck(abck, site) {
+function verify_abck(abck, site, counter = null) {
 	abck = abck.toString();
 	writeToFile(`${abck}\n`);
+	cookie_counter++;
+	logger.purple(`Cookie #${cookie_counter}`)
 	return site.valid_check.every(i => abck.includes(i)) ? {
 		success: true,
 		abck: abck
@@ -702,31 +707,30 @@ function genMouseData(bmak) {
  * @returns {string} MR Value
  */
 function getmr() {
-	//Need to make this more accurate
-	// var e = ['Math.abs(3.14)', 'Math.acos(3.14)', 'Math.asin(3.14)', 'Math.atanh(3.14)', 'Math.cbrt(3.14)', 'Math.exp(3.14)', 'Math.random(3.14)', 'Math.round(3.14)', 'Math.sqrt(3.14)', 'isFinite(3.14)', 'isNaN(3.14)', 'parseFloat(3.14)', 'parseInt(3.14)', 'JSON.parse(3.14)']
 	try {
-		if ("undefined" == typeof performance || void 0 === performance.now || "undefined" == typeof JSON) return void(bmak.mr = "undef");
-		for (var a = "", e = [function(a){Math.abs(a)}, function(a){Math.acos(a)}, function(a){Math.asin(a)}, function(a){Math.atanh(a)}, function(a){Math.cbrt(a)}, function(a){Math.exp(a)}, function(a){Math.random(a)}, function(a){Math.round(a)}, function(a){Math.sqrt(a)}, function(a){isFinite(a)}, function(a){isNaN(a)}, function(a){parseFloat(a)}, function(a){parseInt(a)}, function(a){JSON.parse(a)}], t = 1000, n = 0; n < e.length; n++) {
-			var o = [],
-				m = 0,
-				r = performance.now(),
-				i = 0,
-				c = 0;
-			if (void 0 !== e[n]) {
-				for (i = 0; i < t && m < 0.6; i++) {
-					for(var b = performance.now(), d = 0; d < 4000; d++) e[n](3.14)
-						var k = performance.now();
-						o.push(Math.round(1000 * (k - b))),m = k - r;
-				}
-				var s = o.sort();
-				c = Math.round(s[Math.floor(s.length / 2)] / 5)
-			}
-			a = a + c + ","
-		}
-		return a != null ? a : getmr();
-	} catch (a) {
-		return "exception"
-	}
+		//var log_counter = 0;
+        for (var a = "", t = 1e3, e = [Math.abs, Math.acos, Math.asin, Math.atanh, Math.cbrt, Math.exp, Math.random, Math.round, Math.sqrt, isFinite, isNaN, parseFloat, parseInt, JSON.parse], n = 0; n < e.length; n++) {
+            var o = [],
+                m = 0,
+                r = performance.now(),
+                i = 0,
+                c = 0;
+            if (void 0 !== e[n]) {
+                for (i = 0; i < t && m < .6; i++) {
+                    for (var b = performance.now(), d = 0; d < 4e3; d++) e[n](3.14);
+                    var k = performance.now();
+					//console.log(`#${log_counter++} func [${e[n]}] 1e3*(k-b) ${1e3 * (k - b)}`)
+                    o.push(Math.round(1e3 * (k - b))), m = k - r
+                }
+                var s = o.sort();
+                c = s[Math.floor(s.length / 2)] / 5
+            }
+            a = a + c + ","
+        }
+        return a != null ? a : getmr();
+    } catch (a) {
+        return "exception"
+    }
 }
 
 // function getmr() {
@@ -770,10 +774,11 @@ function cdma(bmak) {
 };
 
 async function getforminfo(site, userAgent, proxy) {
-	var a = "";
+	var a = "",
+		error_url = (site.error_page != null) ? site.error_page : `https://${site.host}/${randomstring.generate({length: 5,charset: 'alphabetic'})}`;
 	var params = {
 		method: 'GET',
-		url: `https://${site.host}/${randomstring.generate({length: 5,charset: 'alphabetic'})}`,
+		url: error_url,
 		headers: {
 			...site.headers,
 			'user-agent': userAgent
@@ -786,7 +791,7 @@ async function getforminfo(site, userAgent, proxy) {
 	function temp(doc) {
 		const dom = new JSDOM(doc.toString());
 		var size = dom.window.document.getElementsByTagName("input").length;
-		logger.green(`${size} inputs`);
+		//logger.green(`${size} inputs`);
 		for (var t = "", n = -1, o = 0; o < size; o++) {
 			var m = dom.window.document.getElementsByTagName("input")[o],
 				r = ab(m.getAttribute("name")),
