@@ -16,7 +16,7 @@ const UserAgent = require('user-agents'),
 	websites = require('./websites.json'),
 	logger = require("./libs/logger"),
 	proxies = fs.readFileSync('./proxy.txt', 'utf-8').toString().toLowerCase().split("\r\n").filter(l => l.length !== 0),
-	{app, session, net} = require('electron'),
+	{app, session, net, BrowserWindow} = require('electron'),
 	originalConsoleError = console.error;
 console.error = (e) => {
 	if (lodash.startsWith(e, '[vuex] unknown') || lodash.startsWith(e, 'Error: Could not parse CSS stylesheet')) return;
@@ -24,7 +24,42 @@ console.error = (e) => {
 }
 let cookie_counter = 0,
 	akamaiSession;
+
 app.on('ready', () => {
+	let win = new BrowserWindow({
+		show: true,
+        width: 1024,
+        height: 1024
+    });
+	const getmr = () => { win.webContents.executeJavaScript(`function x() {
+		try {
+			for (var a = "", t = 1e3, e = [Math.abs, Math.acos, Math.asin, Math.atanh, Math.cbrt, Math.exp, Math.random, Math.round, Math.sqrt, isFinite, isNaN, parseFloat, parseInt, JSON.parse], n = 0; n < e.length; n++) {
+				var o = [],
+					m = 0,
+					r = performance.now(),
+					i = 0,
+					c = 0;
+				if (void 0 !== e[n]) {
+					for (i = 0; i < t && m < .6; i++) {
+						for (var b = performance.now(), d = 0; d < 4e3; d++) e[n](3.14);
+						var k = performance.now();
+						o.push(Math.round(1e3 * (k - b))), m = k - r
+					}
+					var s = o.sort();
+					c = s[Math.floor(s.length / 2)] / 5
+				}
+				a = a + c + ","
+			}
+			return a != null ? a : x();
+		} catch (a) {
+			console.error(a);
+		}
+	}
+	x();`).then((y) => { return y });
+	}
+	win.on('closed', () => {
+		win = null
+	});
 	akamaiSession = session.fromPartition('akamai', {cache: false});
 	var userAgent = (new UserAgent(/Chrome/, {deviceCategory: 'desktop'})).toString().replace(/\|"/g, ""),
 	ua_browser = userAgent.indexOf("Chrome") > -1 ? "chrome" : userAgent.indexOf("Safari") > -1 ? "safari" : userAgent.indexOf("Firefox") > -1 ? "firefox" : "ie";
@@ -247,6 +282,8 @@ function validator(sensor, bmak, formInfo, userAgent, ua_browser, proxy, site, p
 	var postData = `{\"sensor_data\":\"${sensor}\"}`;
 
 	req.write(postData);
+
+	logger.yellow(sensor)
 	  
 	req.end();
 
