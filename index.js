@@ -663,8 +663,8 @@ app.on('ready', () => {
 		var timeStamp = Math.round(get_cf_date() - (new Date() - 20)) + lodash.random(8000, 12000),
 			mouseString = '',
 			loop_amount = 100,
-			path = ghost_cursor({ x: lodash.random(100, 200), y: lodash.random(70, 230) }, { x: lodash.random(500, 800), y: lodash.random(470, 750) });
-			console.log(path.length)
+			generated = ghost_cursor({ x: lodash.random(100, 200), y: lodash.random(70, 230) }, { x: lodash.random(500, 800), y: lodash.random(470, 750) }),
+			path = (generated.length > 100) ? generated : ghost_cursor({ x: lodash.random(100, 200), y: lodash.random(70, 230) }, { x: lodash.random(500, 800), y: lodash.random(470, 750) });
 		for (var i = 0; i <= loop_amount; i++) {
 			let point = path[i];
 				x = Math.round(point.x),
