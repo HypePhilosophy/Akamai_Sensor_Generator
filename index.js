@@ -27,9 +27,9 @@ console.error = (e) => {
 let cookie_counter = 0,
 	akamaiSession;
 
-app.on('ready', async () => {
+app.on('ready', () => {
 	let win = new BrowserWindow({'show': false});
-	await win.loadURL(
+	win.loadURL(
 		url.format({
 		  pathname: path.join(__dirname, "index.html"),
 		  protocol: "file:",
@@ -39,10 +39,11 @@ app.on('ready', async () => {
 	akamaiSession = session.fromPartition('akamai', {cache: false});
 	var userAgent = (new UserAgent(/Chrome/, {deviceCategory: 'desktop'})).toString().replace(/\|"/g, ""),
 	ua_browser = userAgent.indexOf("Chrome") > -1 ? "chrome" : userAgent.indexOf("Safari") > -1 ? "safari" : userAgent.indexOf("Firefox") > -1 ? "firefox" : "ie";
+
+	akamaiSession.setUserAgent(userAgent);
 	init('sony', userAgent, ua_browser, undefined, undefined)
 
 	async function init(site, userAgent, ua_browser, proxy, abck, post_url, cookieJar){
-		// getmr()
 		var site = (abck == null) ? websites.find(w => w.name === site) : site,
 			bmak = {
 				ver: site.ver,
@@ -104,7 +105,6 @@ app.on('ready', async () => {
 					'accept-language': 'en-US,en;q=0.9'
 				}
 			});
-		akamaiSession.setUserAgent(userAgent);
 
 		req.on("response", (response) => {
 			response.on("error", e => reject(e));
@@ -776,7 +776,7 @@ app.on('ready', async () => {
 				console.error(a);
 			}
 		}
-		x();`).then(async (y) => { mr = await y });
+		x();`).then((y) => { mr = y });
 		return mr;
 	}
 
