@@ -85,7 +85,7 @@ app.on('ready', () => {
 				ua_browser: ua_browser,
 			},
 			formInfo = await getforminfo(site, userAgent, proxy);
-		abck == null ? await switcher('minimal', bmak) : await switcher('nomouse', bmak);
+		abck == null ? await switcher('minimal', bmak) : await switcher('mouse', bmak);
 		abck == null ? get_abck(site, bmak, userAgent, ua_browser, formInfo, proxy) : sensorGen(bmak, abck, ua_browser, userAgent, proxy, site, post_url, formInfo, cookieJar);
 	}
 
@@ -168,10 +168,9 @@ app.on('ready', () => {
 			"-1,2,-94,-117," +
 			//bmak.tact
 			"-1,2,-94,-111," +
-			// cdoa(bmak) +
+			cdoa(bmak) +
 			"-1,2,-94,-109," +
-			// dmact(bmak) +
-			// cdma(bmak) +
+			cdma(bmak) +
 			"-1,2,-94,-114," +
 			//bmak.pact
 			"-1,2,-94,-103," +
@@ -637,10 +636,6 @@ app.on('ready', () => {
 		}
 	}
 
-	function dmact(bmak){
-		return '0,' + (get_cf_date() - bmak.start_ts) + ',-1,-1,-1,-1,-1,-1,-1,-1,-1;';
-	}
-
 	/**
 	 * @param {string} abck - abck cookie
 	 * @param {string} site - website
@@ -667,19 +662,20 @@ app.on('ready', () => {
 		var timeStamp = Math.round(get_cf_date() - (new Date() - 20)) + lodash.random(8000, 12000),
 			mouseString = '',
 			loop_amount = 100,
-			path = ghost_cursor({ x: lodash.random(100, 200), y: lodash.random(70, 230) }, { x: lodash.random(500, 800), y: lodash.random(470, 750) }, 200);
+			path = ghost_cursor({ x: lodash.random(100, 200), y: lodash.random(70, 230) }, { x: lodash.random(500, 800), y: lodash.random(470, 750) });
+			console.log(path.length)
 		for (var i = 0; i <= loop_amount; i++) {
 			let point = path[i];
-				x = point.x,
-				y = point.y;
+				x = Math.round(point.x),
+				y = Math.round(point.y);
 			timeStamp = timeStamp + lodash.random(0, 2);
 			if (i == loop_amount) {
 				bmak.me_cnt = lodash.random(200, 1400),
-					mouseString = mouseString + bmak.me_cnt + ',3,' + timeStamp + ',' + Math.round(x) + ',' + Math.round(y) + ',-1;';
+				mouseString = mouseString + bmak.me_cnt + ',3,' + timeStamp + ',' + x + ',' + y + ',-1;';
 			} else {
-				bmak.me_vel = bmak.me_vel + i + 1 + timeStamp + Math.round(x) + Math.round(y),
-					bmak.ta += timeStamp,
-					mouseString = mouseString + i + ',1,' + timeStamp + ',' + Math.round(y) + ',' + Math.round(x) + ";";
+				bmak.me_vel = bmak.me_vel + i + 1 + timeStamp + x + y,
+				bmak.ta += timeStamp,
+				mouseString = mouseString + i + ',1,' + timeStamp + ',' + x + ',' + y + ";";
 			}
 			mouseString = mouseString
 		}
@@ -768,13 +764,18 @@ app.on('ready', () => {
 	 */
 	function cdma(bmak) {
 		try {
-			var t = (get_cf_date() - bmak.start_ts) + 103;
+			var t = (get_cf_date() - bmak.start_ts) + 20;
 			var m = "0," + t + ",-1,-1,-1,-1,-1,-1,-1,-1,-1";
 			bmak.dmact = m + ";";
 			bmak.dme_vel = t;
 			return bmak.dmact;
 		} catch (a) { }
-	};
+	}
+
+	// function dmact(bmak){
+	// 	return '0,' + (get_cf_date() - bmak.start_ts) + ',-1,-1,-1,-1,-1,-1,-1,-1,-1;';
+	// }
+
 	async function getforminfo(site, userAgent, proxy) {
 		var a = "",
 			error_url = (site.error_page != null) ? site.error_page : `https://${site.host}/${randomstring.generate({length: 5,charset: 'alphabetic'})}`;
