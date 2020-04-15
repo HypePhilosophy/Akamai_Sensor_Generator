@@ -42,7 +42,7 @@ app.on('ready', () => {
 	ua_browser = userAgent.indexOf("Chrome") > -1 ? "chrome" : userAgent.indexOf("Safari") > -1 ? "safari" : userAgent.indexOf("Firefox") > -1 ? "firefox" : "ie";
 
 	akamaiSession.setUserAgent(userAgent);
-	init('sony', userAgent, ua_browser, undefined, undefined)
+	init('zalandouk', userAgent, ua_browser, undefined, undefined)
 
 	async function init(site, userAgent, ua_browser, proxy, abck, post_url, cookieJar){
 		var site = (abck == null) ? websites.find(w => w.name === site) : site,
@@ -119,7 +119,7 @@ app.on('ready', () => {
 				akamaiSession.cookies.get({}).then((cookies) => {
 					var abck = cookies.find(x => x.name === "_abck").value;
 					sensorGen(bmak, abck, ua_browser, userAgent, proxy, site, post_url, formInfo, cookieJar);
-				}).catch((e) => logger.red(e.message));
+				}).catch((e) => logger.red(`[Response End] ${e.message}`));
 			});
 		});
 		req.end();
