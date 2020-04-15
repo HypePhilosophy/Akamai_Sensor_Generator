@@ -664,7 +664,6 @@ app.on('ready', () => {
 			mouseString = '',
 			loop_amount = 100,
 			path = ghost_cursor({ x: lodash.random(100, 200), y: lodash.random(70, 230) }, { x: lodash.random(500, 800), y: lodash.random(470, 750) });
-			console.log(path.length)
 		for (var i = 0; i <= loop_amount; i++) {
 			let point = path[i];
 				x = Math.round(point.x),
