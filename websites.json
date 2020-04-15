@@ -57,7 +57,7 @@
 			"Connection":"keep-alive"
         },
         "valid_check": ["~0~", "=="],
-		"error_page": null
+		"error_page": "https://id.sonyentertainmentnetwork.com/signin/#/signin?entry=%2Fsignin"
 	},
 	{
 		"name":"dell",
