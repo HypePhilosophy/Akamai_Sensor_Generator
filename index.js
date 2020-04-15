@@ -19,7 +19,8 @@ const UserAgent = require('user-agents'),
 	logger = require("./libs/logger"),
 	proxies = fs.readFileSync('./proxy.txt', 'utf-8').toString().toLowerCase().split("\r\n").filter(l => l.length !== 0),
 	{app, session, net, BrowserWindow} = require('electron'),
-	originalConsoleError = console.error;
+	originalConsoleError = console.error,
+	ghost_cursor = require("ghost-cursor").path;
 console.error = (e) => {
 	if (lodash.startsWith(e, '[vuex] unknown') || lodash.startsWith(e, 'Error: Could not parse CSS stylesheet')) return;
 	originalConsoleError(e)
@@ -661,60 +662,25 @@ app.on('ready', () => {
 	}
 
 	/**
-	 * @returns {string} Random Mouse Movement
-	 */
-	function bezier(t, p0, p1, p2, p3) {
-		var cX = 3 * (p1.x - p0.x),
-			bX = 3 * (p2.x - p1.x) - cX,
-			aX = p3.x - p0.x - cX - bX;
-
-		var cY = 3 * (p1.y - p0.y),
-			bY = 3 * (p2.y - p1.y) - cY,
-			aY = p3.y - p0.y - cY - bY;
-
-		var x = (aX * Math.pow(t, 3)) + (bX * Math.pow(t, 2)) + (cX * t) + p0.x;
-		var y = (aY * Math.pow(t, 3)) + (bY * Math.pow(t, 2)) + (cY * t) + p0.y;
-
-		return {
-			x: x,
-			y: y
-		};
-	};
-
-
-	/**
 	 * @returns Random Mouse Data
 	 */
 	function genMouseData(bmak) {
-		var timeStamp = Math.round(get_cf_date() - (new Date() - 20)) + lodash.random(8000, 12000);
-		var mouseString = '';
-		p0 = {
-			x: Math.floor(Math.random() * 212),
-			y: Math.floor(Math.random() * 53)
-		}, //use whatever points you want obviously
-			p1 = {
-				x: Math.floor(Math.random() * 123),
-				y: Math.floor(Math.random() * 141)
-			},
-			p2 = {
-				x: Math.floor(Math.random() * 231),
-				y: Math.floor(Math.random() * 45)
-			},
-			p3 = {
-				x: Math.floor(Math.random() * 91),
-				y: Math.floor(Math.random() * 167)
-			};
-		var loop_amount = 100;
+		var timeStamp = Math.round(get_cf_date() - (new Date() - 20)) + lodash.random(8000, 12000),
+			mouseString = '',
+			loop_amount = 100,
+			path = ghost_cursor({ x: lodash.random(100, 200), y: lodash.random(70, 230) }, { x: lodash.random(500, 800), y: lodash.random(470, 750) }, 200);
 		for (var i = 0; i <= loop_amount; i++) {
-			var p = bezier(i / 100, p0, p1, p2, p3);
+			let point = path[i];
+				x = point.x,
+				y = point.y;
 			timeStamp = timeStamp + lodash.random(0, 2);
 			if (i == loop_amount) {
 				bmak.me_cnt = lodash.random(200, 1400),
-					mouseString = mouseString + bmak.me_cnt + ',3,' + timeStamp + ',' + Math.round(p.x) + ',' + Math.round(p.y) + ',-1;';
+					mouseString = mouseString + bmak.me_cnt + ',3,' + timeStamp + ',' + Math.round(x) + ',' + Math.round(y) + ',-1;';
 			} else {
-				bmak.me_vel = bmak.me_vel + i + 1 + timeStamp + Math.round(p.x) + Math.round(p.y),
+				bmak.me_vel = bmak.me_vel + i + 1 + timeStamp + Math.round(x) + Math.round(y),
 					bmak.ta += timeStamp,
-					mouseString = mouseString + i + ',1,' + timeStamp + ',' + Math.round(p.x) + ',' + Math.round(p.y) + ";";
+					mouseString = mouseString + i + ',1,' + timeStamp + ',' + Math.round(y) + ',' + Math.round(x) + ";";
 			}
 			mouseString = mouseString
 		}
