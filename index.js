@@ -26,7 +26,7 @@ console.error = (e) => {
 }
 let cookie_counter = 0,
 	akamaiSession;
-
+app.allowRendererProcessReuse = false;
 app.on('ready', () => {
 	let win = new BrowserWindow({'show': false});
 	win.loadURL(
