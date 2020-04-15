@@ -1,23 +1,20 @@
 const Logger = function () { };
-
 Logger.prototype.green = function success(message) {
-    console.log("\x1b[32m", `[${new Date().toISOString()}] ${message}`);
+    console.log(`[${new Date().toISOString()}] \x1b[32m${message}\x1b[0m`);
 };
-
+Logger.prototype.purple = function success(message) {
+    console.log(`[${new Date().toISOString()}] \x1b[45m${message}\x1b[0m`);
+};
 Logger.prototype.red = function error(message) {
-    console.log("\x1b[31m", `[${new Date().toISOString()}] ${message}`);
+    console.log(`[${new Date().toISOString()}] \x1b[31m${message}\x1b[0m`);
 };
-
 Logger.prototype.blue = function info(message) {
-    console.log("\x1b[34m", `[${new Date().toISOString()}] ${message}`);
+    console.log(`[${new Date().toISOString()}] \x1b[34m${message}\x1b[0m`);
 };
-
 Logger.prototype.yellow = function warn(message) {
-    console.log("\x1b[33m", `[${new Date().toISOString()}] ${message}`);
+    console.log(`[${new Date().toISOString()}] \x1b[33m${message}\x1b[0m`);
 };
-
 Logger.prototype.white = function normal(message) {
-    console.log("\x1b[37m", `[${new Date().toISOString()}] ${message}`);
+    console.log(`[${new Date().toISOString()}] \x1b[37m${message}\x1b[0m`);
 }
-
 module.exports = new Logger();
