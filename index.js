@@ -28,7 +28,7 @@ app.on('ready', () => {
 	akamaiSession = session.fromPartition('akamai', {cache: false});
 	var userAgent = (new UserAgent(/Chrome/, {deviceCategory: 'desktop'})).toString().replace(/\|"/g, ""),
 	ua_browser = userAgent.indexOf("Chrome") > -1 ? "chrome" : userAgent.indexOf("Safari") > -1 ? "safari" : userAgent.indexOf("Firefox") > -1 ? "firefox" : "ie";
-	init('costa', userAgent, ua_browser, undefined, undefined)
+	init('dell', userAgent, ua_browser, undefined, undefined)
 });
 
 async function init(site, userAgent, ua_browser, proxy, abck, post_url, cookieJar){
