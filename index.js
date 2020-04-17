@@ -42,7 +42,7 @@ app.on('ready', () => {
 	ua_browser = userAgent.indexOf("Chrome") > -1 ? "chrome" : userAgent.indexOf("Safari") > -1 ? "safari" : userAgent.indexOf("Firefox") > -1 ? "firefox" : "ie";
 
 	akamaiSession.setUserAgent(userAgent);
-	init('sony', userAgent, ua_browser, undefined, undefined)
+	init('footlockeruk', userAgent, ua_browser, undefined, undefined)
 
 	async function init(site, userAgent, ua_browser, proxy, abck, post_url, cookieJar){
 		var site = (abck == null) ? websites.find(w => w.name === site) : site,
@@ -65,6 +65,26 @@ app.on('ready', () => {
 				dmact: 0,
 				me_cnt: 0,
 				me_vel: 0,
+				mn_mc_lmt: 10,
+				mn_state: 0,
+				mn_mc_indx: 0,
+				mn_sen: 0,
+				mn_tout: 100,
+				mn_stout: 1e3,
+				mn_ct: 1,
+				mn_cc: "",
+				mn_cd: 1000,
+				mn_lc: [],
+				mn_ld: [],
+				mn_lcl: 0,
+				mn_al: [],
+				mn_il: [],
+				mn_tcl: [],
+				mn_r: [],
+				mn_abck: "",
+				mn_psn: "",
+				mn_ts: "",
+        		mn_lg: [],
 				ta: 0,
 				n_ck: 0,
 				doe_vel: 0,
@@ -85,7 +105,8 @@ app.on('ready', () => {
 				ua_browser: ua_browser,
 			},
 			formInfo = await getforminfo(site, userAgent, proxy);
-		abck == null ? await switcher('minimal', bmak) : await switcher('mouse', bmak);
+		// abck == null ? await switcher('minimal', bmak) : await switcher('mouse', bmak);
+		await switcher('nomouse', bmak);
 		abck == null ? get_abck(site, bmak, userAgent, ua_browser, formInfo, proxy) : sensorGen(bmak, abck, ua_browser, userAgent, proxy, site, post_url, formInfo, cookieJar);
 	}
 
@@ -119,7 +140,7 @@ app.on('ready', () => {
 				akamaiSession.cookies.get({}).then((cookies) => {
 					var abck = cookies.find(x => x.name === "_abck").value;
 					sensorGen(bmak, abck, ua_browser, userAgent, proxy, site, post_url, formInfo, cookieJar);
-				}).catch((e) => logger.red(e.message));
+				}).catch((e) => logger.red('exception ' + e.stack));
 			});
 		});
 		req.end();
@@ -150,6 +171,7 @@ app.on('ready', () => {
 	}
 
 	async function sensorGen(bmak, abck, ua_browser, userAgent, proxy, site, post_url, formInfo, cookieJar) {
+		var g = "", w = "", y = "";
 		to(bmak);
 		var sensor_data =
 			bmak.ver +
@@ -168,9 +190,9 @@ app.on('ready', () => {
 			"-1,2,-94,-117," +
 			//bmak.tact
 			"-1,2,-94,-111," +
-			cdoa(bmak) +
+			// cdoa(bmak) +
 			"-1,2,-94,-109," +
-			cdma(bmak) +
+			// cdma(bmak) +
 			"-1,2,-94,-114," +
 			//bmak.pact
 			"-1,2,-94,-103," +
@@ -186,10 +208,13 @@ app.on('ready', () => {
 			"-1,2,-94,-122," +
 			sed() +
 			"-1,2,-94,-123," +
+			g
 			//h function (undefined)
 			"-1,2,-94,-124," +
+			w
 			//g function (undefined)
 			"-1,2,-94,-126," +
+			y
 			"-1,2,-94,-127," +
 			bmak.nav_perm;
 
@@ -208,7 +233,7 @@ app.on('ready', () => {
 			"-1,2,-94,-121,";
 		var sensor = gen_key(sensor_data);
 		//logger.yellow(sensor);
-		return validator(sensor, bmak, formInfo, userAgent, ua_browser, proxy, site, post_url, cookieJar)
+		validator(sensor, bmak, formInfo, userAgent, ua_browser, proxy, site, post_url, cookieJar)
 	}
 
 	function validator(sensor, bmak, formInfo, userAgent, ua_browser, proxy, site, post_url, cookieJar) {
@@ -242,11 +267,11 @@ app.on('ready', () => {
 			});
 		
 			res.on("end", function (chunk) {
-				akamaiSession.cookies.get({}).then((cookies) => {
+				akamaiSession.cookies.get({}).then(async (cookies) => {
 					var abck = cookies.find(x => x.name === "_abck").value;
 					var verify = verify_abck(abck, site, true);
 					verify.success ? logger.green(JSON.stringify(verify)) : logger.red(JSON.stringify(verify));
-					//app.exit(0)
+					await mn_poll(abck, bmak)
 					init(site, userAgent, ua_browser, proxy, abck, post_url, cookieJar);
 				}).catch((e) => logger.red(e.message));
 			});
@@ -683,35 +708,6 @@ app.on('ready', () => {
 
 		return mouseString;
 	}
-	/**
-	 * @returns {string} MR Value
-	 */
-	// function getmr() {
-	// 	try {
-	// 		//var log_counter = 0;
-	//         for (var a = "", t = 1e3, e = [Math.abs, Math.acos, Math.asin, Math.atanh, Math.cbrt, Math.exp, Math.random, Math.round, Math.sqrt, isFinite, isNaN, parseFloat, parseInt, JSON.parse], n = 0; n < e.length; n++) {
-	//             var o = [],
-	//                 m = 0,
-	//                 r = performance.now(),
-	//                 i = 0,
-	//                 c = 0;
-	//             if (void 0 !== e[n]) {
-	//                 for (i = 0; i < t && m < .6; i++) {
-	//                     for (var b = performance.now(), d = 0; d < 4e3; d++) e[n](3.14);
-	//                     var k = performance.now();
-	// 					//console.log(`#${log_counter++} func [${e[n]}] 1e3*(k-b) ${1e3 * (k - b)}`)
-	//                     o.push(Math.round(1e3 * (k - b))), m = k - r
-	//                 }
-	//                 var s = o.sort();
-	//                 c = s[Math.floor(s.length / 2)] / 5
-	//             }
-	//             a = a + c + ","
-	//         }
-	//         return a != null ? a : getmr();
-	//     } catch (a) {
-	//         return "exception"
-	//     }
-	// }
 
 	async function getmr() {
 		var mr;
@@ -795,7 +791,7 @@ app.on('ready', () => {
 		function temp(doc) {
 			const dom = new JSDOM(doc.toString());
 			var size = dom.window.document.getElementsByTagName("input").length;
-			//logger.green(`${size} inputs`);
+			logger.green(`${size} inputs`);
 			for (var t = "", n = -1, o = 0; o < size; o++) {
 				var m = dom.window.document.getElementsByTagName("input")[o],
 					r = ab(m.getAttribute("name")),
@@ -827,6 +823,173 @@ app.on('ready', () => {
 		fs.appendFile('abck.txt', abck, (e) => {
 			if (e) throw e.message;
 		});
+	}
+
+/**
+ * 
+ * @param {Challenge Cookie Code}
+ */
+
+	function controller(abck, bmak){
+		var h = mn_get_current_challenges(abck);
+		if (undefined !== h[1]) {
+			var C = h[1];
+			undefined !== bmak.mn_r[C] && (g = bmak.mn_r[C])
+		}
+		if (undefined !== h[2]) {
+			var E = h[2];
+			undefined !== bmak.mn_r[E] && (w = bmak.mn_r[E])
+		}
+		if (undefined !== h[3]) {
+			var S = h[3];
+			undefined !== bmak.mn_r[S] && (y = bmak.mn_r[S])
+		}
+	}
+
+	async function mn_poll(abck, bmak) {
+		if (0 == bmak.mn_state) {
+			var a = get_mn_params_from_abck(abck),
+				t = mn_get_new_challenge_params(a, bmak);
+			null != t && (mn_update_challenge_details(t, bmak));
+			await mn_w(bmak)
+		}
+	}
+
+	function get_mn_params_from_abck(abck) {
+		var a = [
+			[]
+		];
+		try {
+			var t = abck;
+			if (!1 !== t) {
+				var e = decodeURIComponent(t).split("~");
+				if (e.length >= 5) {
+					var n = e[0],
+						o = e[4],
+						m = o.split("\|\|");
+					if (m.length > 0)
+						for (var r = 0; r < m.length; r++) {
+							var i = m[r],
+								c = i.split("-");
+							if (c.length >= 5) {
+								var b = pi(c[0]),
+									d = c[1],
+									k = pi(c[2]),
+									s = pi(c[3]),
+									l = pi(c[4]),
+									u = 1;
+								c.length >= 6 && (u = pi(c[5]));
+								var _ = [b, n, d, k, s, l, u];
+								2 == u ? a.splice(0, 0, _) : a.push(_)
+							}
+						}
+				}
+			}
+		} catch (a) {}
+		return a	
+	}
+
+	function mn_get_current_challenges(abck) {
+		var a = get_mn_params_from_abck(abck),
+			t = [];
+		if (null != a)
+			for (var e = 0; e < a.length; e++) {
+				var n = a[e];
+				if (n.length > 0) {
+					var o = n[1] + n[2],
+						m = n[6];
+					t[m] = o
+				}
+			}
+		return t
+	}
+
+	function mn_update_challenge_details(a, bmak) {
+		bmak.mn_sen = a[0], bmak.mn_abck = a[1], bmak.mn_psn = a[2], bmak.mn_cd = a[3], bmak.mn_tout = a[4], bmak.mn_stout = a[5], bmak.mn_ct = a[6], bmak.mn_ts = bmak.start_ts, bmak.mn_cc = bmak.mn_abck + bmak.start_ts + bmak.mn_psn
+	}
+
+	function mn_get_new_challenge_params(a, bmak) {
+		var t = null,
+			e = null,
+			n = null;
+		if (null != a)
+			for (var o = 0; o < a.length; o++) {
+				var m = a[o];
+				if (m.length > 0) {
+					for (var r = m[0], i = bmak.mn_abck + bmak.start_ts + m[2], c = m[3], b = m[6], d = 0; d < bmak.mn_lcl && (1 == r && bmak.mn_lc[d] != i && bmak.mn_ld[d] != c); d++);
+					d == bmak.mn_lcl && (t = o, 2 == b && (e = o), 3 == b && (n = o))
+				}
+			}
+		return null != n && bmak.pstate ? a[n] : null == e || bmak.pstate ? null == t || bmak.pstate ? null : a[t] : a[e]
+	}
+
+	async function mn_w(bmak) {
+		//Called when you get challenge cookie
+		try {
+			for (var a = 0, t = 0, e = 0, n = "", o = get_cf_date(), m = bmak.mn_cd + bmak.mn_mc_indx; 0 == a;) {
+				n = Math.random().toString(16);
+				var r = bmak.mn_cc + m.toString() + n,
+					i = mn_h(r);
+				if (0 == bdm(i, m)) a = 1, e = get_cf_date() - o, bmak.mn_al.push(n), bmak.mn_tcl.push(e), bmak.mn_il.push(t), 0 == bmak.mn_mc_indx && (bmak.mn_lg.push(bmak.mn_abck), bmak.mn_lg.push(bmak.mn_ts), bmak.mn_lg.push(bmak.mn_psn), bmak.mn_lg.push(bmak.mn_cc), bmak.mn_lg.push(bmak.mn_cd.toString()), bmak.mn_lg.push(m.toString()), bmak.mn_lg.push(n), bmak.mn_lg.push(r), bmak.mn_lg.push(i));
+				else if ((t += 1) % 1e3 == 0 && (e = get_cf_date() - o) > bmak.mn_stout) return setTimeout(mn_w, 1e3 + bmak.mn_stout);
+			}
+			bmak.mn_mc_indx += 1, bmak.mn_mc_indx < bmak.mn_mc_lmt ? mn_w(bmak) : (bmak.mn_mc_indx = 0, bmak.mn_lc[bmak.mn_lcl] = bmak.mn_cc, bmak.mn_ld[bmak.mn_lcl] = bmak.mn_cd, bmak.mn_lcl = bmak.mn_lcl + 1, bmak.mn_state = 0, bmak.mn_r[bmak.mn_abck + bmak.mn_psn] = mn_pr(bmak))
+			// logger.green(mn_pr(bmak));
+		} catch (a) {
+			logger.red('exception on line ' + a.stack)
+		}
+	}
+
+	function mn_pr(bmak) {
+		return bmak.mn_al.join(",") + ";" + bmak.mn_tcl.join(",") + ";" + bmak.mn_il.join(",") + ";" + bmak.mn_lg.join(",") + ";";
+	}
+
+	/**
+	* @Miscellaneous - Math functions
+	*/
+
+	//Used for determining how long challenge cookie verification loops for
+	function mn_h(a) {
+		var t = 1732584193,
+			e = 4023233417,
+			n = 2562383102,
+			o = 271733878,
+			m = 3285377520,
+			r = encode_utf8(a),
+			i = 8 * r.length;
+		r += String.fromCharCode(128);
+		for (var c = r.length / 4 + 2, b = Math.ceil(c / 16), d = new Array(b), k = 0; k < b; k++) {
+			d[k] = new Array(16);
+			for (var s = 0; s < 16; s++) d[k][s] = r.charCodeAt(64 * k + 4 * s) << 24 | r.charCodeAt(64 * k + 4 * s + 1) << 16 | r.charCodeAt(64 * k + 4 * s + 2) << 8 | r.charCodeAt(64 * k + 4 * s + 3) << 0
+		}
+		var l = i / Math.pow(2, 32);
+		d[b - 1][14] = Math.floor(l), d[b - 1][15] = 4294967295 & i;
+		for (var u = 0; u < b; u++) {
+			for (var _, f, p, v = new Array(80), h = t, g = e, w = n, y = o, C = m, k = 0; k < 80; k++) v[k] = k < 16 ? d[u][k] : rotate_left(v[k - 3] ^ v[k - 8] ^ v[k - 14] ^ v[k - 16], 1), k < 20 ? (_ = g & w | ~g & y, f = 1518500249) : k < 40 ? (_ = g ^ w ^ y, f = 1859775393) : k < 60 ? (_ = g & w | g & y | w & y, f = 2400959708) : (_ = g ^ w ^ y, f = 3395469782), p = rotate_left(h, 5) + _ + C + f + v[k], C = y, y = w, w = rotate_left(g, 30), g = h, h = p;
+			t += h, e += g, n += w, o += y, m += C
+		}
+		return [t >> 24 & 255, t >> 16 & 255, t >> 8 & 255, 255 & t, e >> 24 & 255, e >> 16 & 255, e >> 8 & 255, 255 & e, n >> 24 & 255, n >> 16 & 255, n >> 8 & 255, 255 & n, o >> 24 & 255, o >> 16 & 255, o >> 8 & 255, 255 & o, m >> 24 & 255, m >> 16 & 255, m >> 8 & 255, 255 & m]
+	}
+
+	/**
+	 * @Miscellaneous - Support functions
+	 */
+
+	function encode_utf8(a) {
+		return unescape(encodeURIComponent(a))
+	}
+
+	function rotate_left(a, t) {
+		return a << t | a >>> 32 - t;
+	}
+
+	function pi(a) {
+		return parseInt(a);
+	}
+
+	function bdm(a, t) {
+		for (var e = 0, n = 0; n < a.length; ++n) e = (e << 8 | a[n]) >>> 0, e %= t;
+		return e;
 	}
 });
 

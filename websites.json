@@ -223,7 +223,7 @@
 			"Connection":"keep-alive",
 			"Cache-Control":"no-cache"
 		},
-        "valid_check": [],
+        "valid_check": ["~-1~", "=~-"],
 		"error_page": null
 	},
 	{

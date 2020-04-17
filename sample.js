@@ -14,7 +14,7 @@ var _cf = _cf || [],
         doa_throttle: 0,
         dma_throttle: 0,
         session_id: "default_session",
-        js_post: !1,
+        js_post: false,
         loc: "",
         cf_url: ("https:" === document.location.protocol ? "https://" : "http://") + "apid\.cformanalytics\.com/api/v1/attempt",
         params_url: ("https:" === document.location.protocol ? "https://" : "http://") + document.location.hostname + "/get_params",
@@ -59,14 +59,14 @@ var _cf = _cf || [],
         ckie: "_abck",
         n_ck: "0",
         ckurl: 0,
-        bm: !1,
+        bm: false,
         mr: "-1",
-        altFonts: !1,
-        rst: !1,
-        runFonts: !1,
-        fsp: !1,
+        altFonts: false,
+        rst: false,
+        runFonts: false,
+        fsp: false,
         firstLoad: true,
-        pstate: !1,
+        pstate: false,
         mn_mc_lmt: 10,
         mn_state: 0,
         mn_mc_indx: 0,
@@ -75,7 +75,7 @@ var _cf = _cf || [],
         mn_stout: 1e3,
         mn_ct: 1,
         mn_cc: "",
-        mn_cd: 1e4,
+        mn_cd: 1000,
         mn_lc: [],
         mn_ld: [],
         mn_lcl: 0,
@@ -123,7 +123,7 @@ var _cf = _cf || [],
             return s = s.slice(0, 11) + k, bmak.get_browser(), bmak.bc(), bmak.bmisc(), a + ",uaend," + bmak.xagg + "," + bmak.psub + "," + bmak.lang + "," + bmak.prod + "," + bmak.plen + "," + bmak.pen + "," + bmak.wen + "," + bmak.den + "," + bmak.z1 + "," + bmak.d3 + "," + n + "," + o + "," + m + "," + r + "," + i + "," + c + "," + b + "," + bmak.bd() + "," + t + "," + s + "," + e + ",loc:" + bmak.loc
         },
         get_browser: function () {
-            navigator.productSub && (bmak.psub = navigator.productSub), navigator.language && (bmak.lang = navigator.language), navigator.product && (bmak.prod = navigator.product), bmak.plen = void 0 !== navigator.plugins ? navigator.plugins.length : -1
+            navigator.productSub && (bmak.psub = navigator.productSub), navigator.language && (bmak.lang = navigator.language), navigator.product && (bmak.prod = navigator.product), bmak.plen = undefined !== navigator.plugins ? navigator.plugins.length : -1
         },
         bc: function () {
             var a = window.addEventListener ? 1 : 0,
@@ -150,7 +150,7 @@ var _cf = _cf || [],
                 t = window.callPhantom ? 1 : 0;
             a.push(",cpen:" + t);
             try {
-                var e = new Function("return/\*@cc_on!@\*/!1")() ? 1 : 0
+                var e = new Function("return/\*@cc_on!@\*/false")() ? 1 : 0
             } catch (a) {
                 var e = 0
             }
@@ -189,14 +189,14 @@ var _cf = _cf || [],
         },
         getmr: function () {
             try {
-                if ("undefined" == typeof performance || void 0 === performance.now || "undefined" == typeof JSON) return void(bmak.mr = "undef");
+                if ("undefined" == typeof performance || undefined === performance.now || "undefined" == typeof JSON) return void(bmak.mr = "undef");
                 for (var a = "", t = 1e3, e = [Math.abs, Math.acos, Math.asin, Math.atanh, Math.cbrt, Math.exp, Math.random, Math.round, Math.sqrt, isFinite, isNaN, parseFloat, parseInt, JSON.parse], n = 0; n < e.length; n++) {
                     var o = [],
                         m = 0,
                         r = performance.now(),
                         i = 0,
                         c = 0;
-                    if (void 0 !== e[n]) {
+                    if (undefined !== e[n]) {
                         for (i = 0; i < t && m < .6; i++) {
                             for (var b = performance.now(), d = 0; d < 4e3; d++) e[n](3.14);
                             var k = performance.now();
@@ -218,11 +218,11 @@ var _cf = _cf || [],
             var t;
             t = null != window.document.documentElement.getAttribute("webdriver") ? "1" : "0";
             var e;
-            e = void 0 !== navigator.webdriver && navigator.webdriver ? "1" : "0";
+            e = undefined !== navigator.webdriver && navigator.webdriver ? "1" : "0";
             var n;
-            n = void 0 !== window.webdriver ? "1" : "0";
+            n = undefined !== window.webdriver ? "1" : "0";
             var o;
-            o = void 0 !== window.XPathResult || void 0 !== document.XPathResult ? "1" : "0";
+            o = undefined !== window.XPathResult || undefined !== document.XPathResult ? "1" : "0";
             var m;
             m = null != window.document.documentElement.getAttribute("driver") ? "1" : "0";
             var r;
@@ -259,10 +259,10 @@ var _cf = _cf || [],
                     //This is called when non mousemove activities are detected
                     if (1 != t) {
                         c = c + "," + r;
-                        var b = void 0 !== e.which ? e.which : e.button;
+                        var b = undefined !== e.which ? e.which : e.button;
                         null != b && 1 != b && (c = c + "," + b)
                     }
-                    void 0 !== e.isTrusted && !1 === e.isTrusted && (c += ",it0"), c += ";", bmak.me_vel = bmak.me_vel + bmak.me_cnt + t + i + n + o, bmak.mact = bmak.mact + c, bmak.ta += i
+                    undefined !== e.isTrusted && false === e.isTrusted && (c += ",it0"), c += ";", bmak.me_vel = bmak.me_vel + bmak.me_cnt + t + i + n + o, bmak.mact = bmak.mact + c, bmak.ta += i
                 }
                 1 == t ? bmak.mme_cnt++ : bmak.mduce_cnt++, bmak.me_cnt++, bmak.js_post && 3 == t && (bmak.aj_type = 1, bmak.bpd(), bmak.pd(true), bmak.ce_js_post = 1)
             } catch (a) {}
@@ -316,7 +316,7 @@ var _cf = _cf || [],
             t=4 pointerup
              */
             try {
-                var e = !1;
+                var e = false;
                 if (1 == t && bmak.pme_cnt < 25 || 1 != t && bmak.pduce_cnt < 25) {
                     var n = a || window.event;
                     if (n && "mouse" != n.pointerType) {
@@ -326,7 +326,7 @@ var _cf = _cf || [],
                         n && n.pageX && n.pageY ? (o = Math.floor(n.pageX), m = Math.floor(n.pageY)) : n && n.clientX && n.clientY && (o = Math.floor(n.clientX), m = Math.floor(n.clientY));
                         var r = bmak.get_cf_date() - bmak.start_ts,
                             i = bmak.pe_cnt + "," + t + "," + r + "," + o + "," + m;
-                        void 0 !== n.isTrusted && !1 === n.isTrusted && (i += ",0"), bmak.pe_vel = bmak.pe_vel + bmak.pe_cnt + t + r + o + m, bmak.pact = bmak.pact + i + ";", bmak.ta += r, 1 == t ? bmak.pme_cnt++ : bmak.pduce_cnt++
+                        undefined !== n.isTrusted && false === n.isTrusted && (i += ",0"), bmak.pe_vel = bmak.pe_vel + bmak.pe_cnt + t + r + o + m, bmak.pact = bmak.pact + i + ";", bmak.ta += r, 1 == t ? bmak.pme_cnt++ : bmak.pduce_cnt++
                     }
                 }
                 1 == t ? bmak.pme_cnt++ : bmak.pduce_cnt++, bmak.pe_cnt++, bmak.js_post && 3 == t && e && (bmak.aj_type = 2, bmak.bpd(), bmak.pd(true), bmak.ce_js_post = 1)
@@ -406,7 +406,7 @@ var _cf = _cf || [],
                     m && n && (n = 0 != m && 0 != n && m != n ? -1 : 0 != n ? n : m), 0 == i && 0 == c && 0 == b && n >= 32 && (n = 3 == t && n >= 32 && n <= 126 ? -2 : n >= 33 && n <= 47 ? -3 : n >= 112 && n <= 123 ? -4 : -2), s != bmak.prevfid ? (bmak.fidcnt = 0, bmak.prevfid = s) : bmak.fidcnt = bmak.fidcnt + 1;
                     if (0 == bmak.isIgn(n)) {
                         var u = bmak.ke_cnt + "," + t + "," + k + "," + n + "," + l + "," + d + "," + s;
-                        void 0 !== e.isTrusted && !1 === e.isTrusted && (u += ",0"), u += ";", bmak.kact = bmak.kact + u, bmak.ke_vel = bmak.ke_vel + bmak.ke_cnt + t + k + n + d + s, bmak.ta += k
+                        undefined !== e.isTrusted && false === e.isTrusted && (u += ",0"), u += ";", bmak.kact = bmak.kact + u, bmak.ke_vel = bmak.ke_vel + bmak.ke_cnt + t + k + n + d + s, bmak.ta += k
                     } else o = 0
                 }
                 o && e && bmak.ke_cnt++, !bmak.js_post || 1 != t || 13 != n && 9 != n || (bmak.aj_type = 3, bmak.bpd(), bmak.pd(true), bmak.ce_js_post = 1)
@@ -429,7 +429,7 @@ var _cf = _cf || [],
                     e && e.pageX && e.pageY ? (n = Math.floor(e.pageX), o = Math.floor(e.pageY)) : e && e.clientX && e.clientY && (n = Math.floor(e.clientX), o = Math.floor(e.clientY));
                     var m = bmak.get_cf_date() - bmak.start_ts,
                         r = bmak.te_cnt + "," + t + "," + m + "," + n + "," + o;
-                    void 0 !== e.isTrusted && !1 === e.isTrusted && (r += ",0"), bmak.tact = bmak.tact + r + ";", bmak.ta += m, bmak.te_vel = bmak.te_vel + bmak.te_cnt + t + m + n + o, bmak.doa_throttle = 0, bmak.dma_throttle = 0
+                    undefined !== e.isTrusted && false === e.isTrusted && (r += ",0"), bmak.tact = bmak.tact + r + ";", bmak.ta += m, bmak.te_vel = bmak.te_vel + bmak.te_cnt + t + m + n + o, bmak.doa_throttle = 0, bmak.dma_throttle = 0
                 }
                 1 == t ? bmak.tme_cnt++ : bmak.tduce_cnt++, bmak.te_cnt++, bmak.js_post && 2 == t && bmak.aj_indx_tact < bmak.aj_lmt_tact && (bmak.aj_type = 5, bmak.bpd(), bmak.pd(true), bmak.ce_js_post = 1, bmak.aj_indx_tact++)
             } catch (a) {}
@@ -452,7 +452,7 @@ var _cf = _cf || [],
                         n = bmak.getFloatVal(a.beta),
                         o = bmak.getFloatVal(a.gamma),
                         m = bmak.doe_cnt + "," + t + "," + e + "," + n + "," + o;
-                    void 0 !== a.isTrusted && !1 === a.isTrusted && (m += ",0"), bmak.doact = bmak.doact + m + ";", bmak.ta += t, bmak.doe_vel = bmak.doe_vel + bmak.doe_cnt + t, bmak.doe_cnt++
+                    undefined !== a.isTrusted && false === a.isTrusted && (m += ",0"), bmak.doact = bmak.doact + m + ";", bmak.ta += t, bmak.doe_vel = bmak.doe_vel + bmak.doe_cnt + t, bmak.doe_cnt++
                 }
                 bmak.js_post && bmak.doe_cnt > 1 && bmak.aj_indx_doact < bmak.aj_lmt_doact && (bmak.aj_type = 6, bmak.bpd(), bmak.pd(true), bmak.ce_js_post = 1, bmak.aj_indx_doact++), bmak.doa_throttle++
             } catch (a) {}
@@ -475,7 +475,7 @@ var _cf = _cf || [],
                         d = 1;
                     a.rotationRate && (c = bmak.getFloatVal(a.rotationRate.alpha), b = bmak.getFloatVal(a.rotationRate.beta), d = bmak.getFloatVal(a.rotationRate.gamma));
                     var k = bmak.dme_cnt + "," + t + "," + e + "," + n + "," + o + "," + m + "," + r + "," + i + "," + c + "," + b + "," + d;
-                    void 0 !== a.isTrusted && !1 === a.isTrusted && (k += ",0"), bmak.dmact = bmak.dmact + k + ";", bmak.ta += t, bmak.dme_vel = bmak.dme_vel + bmak.dme_cnt + t, bmak.dme_cnt++
+                    undefined !== a.isTrusted && false === a.isTrusted && (k += ",0"), bmak.dmact = bmak.dmact + k + ";", bmak.ta += t, bmak.dme_vel = bmak.dme_vel + bmak.dme_cnt + t, bmak.dme_cnt++
                 }
                 bmak.js_post && bmak.dme_cnt > 1 && bmak.aj_indx_dmact < bmak.aj_lmt_dmact && (bmak.aj_type = 7, bmak.bpd(), bmak.pd(true), bmak.ce_js_post = 1, bmak.aj_indx_dmact++), bmak.dma_throttle++
             } catch (a) {}
@@ -567,7 +567,7 @@ var _cf = _cf || [],
             //Submit form
             try {
                 if (bmak.bpd(), 0 == bmak.sdfn.length) {
-                    if (document.getElementById("bm-telemetry") && (document.getElementById("bm-telemetry").value = bmak.sensor_data), void 0 !== document.getElementsByName("bm-telemetry"))
+                    if (document.getElementById("bm-telemetry") && (document.getElementById("bm-telemetry").value = bmak.sensor_data), undefined !== document.getElementsByName("bm-telemetry"))
                         for (var a = document.getElementsByName("bm-telemetry"), t = 0; t < a.length; t++) a[t].value = bmak.sensor_data
                 } else
                     for (var t = 0; t < bmak.sdfn.length; t++) document.getElementById(bmak.sdfn[t]) && (document.getElementById(bmak.sdfn[t]).value = bmak.sensor_data)
@@ -589,7 +589,7 @@ var _cf = _cf || [],
             return bmak.set_cookie(bmak.ckie, a + "_" + bmak.ab(a)), a
         },
         set_cookie: function (a, t) {
-            void 0 !== document.cookie && (document.cookie = a + "=" + t + "; path=/; expires=Fri, 01 Feb 2025 08:00:00 GMT;")
+            undefined !== document.cookie && (document.cookie = a + "=" + t + "; path=/; expires=Fri, 01 Feb 2025 08:00:00 GMT;")
         },
         get_cookie: function () {
             var a = "0";
@@ -608,7 +608,7 @@ var _cf = _cf || [],
                         if (-1 != m.indexOf("~") || -1 != decodeURIComponent(m).indexOf("~")) return m
                     }
                 }
-            return !1
+            return false
         },
         bpd: function () {
             bmak.sd_debug("<bpd>");
@@ -640,17 +640,17 @@ var _cf = _cf || [],
                     g = "",
                     w = "",
                     y = "";
-                if (void 0 !== h[1]) {
+                if (undefined !== h[1]) {
                     var C = h[1];
-                    void 0 !== bmak.mn_r[C] && (g = bmak.mn_r[C])
+                    undefined !== bmak.mn_r[C] && (g = bmak.mn_r[C])
                 }
-                if (void 0 !== h[2]) {
+                if (undefined !== h[2]) {
                     var E = h[2];
-                    void 0 !== bmak.mn_r[E] && (w = bmak.mn_r[E])
+                    undefined !== bmak.mn_r[E] && (w = bmak.mn_r[E])
                 }
-                if (void 0 !== h[3]) {
+                if (undefined !== h[3]) {
                     var S = h[3];
-                    void 0 !== bmak.mn_r[S] && (y = bmak.mn_r[S])
+                    undefined !== bmak.mn_r[S] && (y = bmak.mn_r[S])
                 }
                 bmak.sensor_data = bmak.ver + "-1,2,-94,-100," + n + "-1,2,-94,-101," + i + "-1,2,-94,-105," + bmak.informinfo + "-1,2,-94,-102," + c + "-1,2,-94,-108," + bmak.kact + "-1,2,-94,-110," + bmak.mact + "-1,2,-94,-117," + bmak.tact + "-1,2,-94,-111," + bmak.doact + "-1,2,-94,-109," + bmak.dmact + "-1,2,-94,-114," + bmak.pact + "-1,2,-94,-103," + bmak.vcact + "-1,2,-94,-112," + b + "-1,2,-94,-115," + f + "-1,2,-94,-106," + d, bmak.sensor_data = bmak.sensor_data + "-1,2,-94,-119," + bmak.mr + "-1,2,-94,-122," + v + "-1,2,-94,-123," + g + "-1,2,-94,-124," + w + "-1,2,-94,-126," + y + "-1,2,-94,-127," + bmak.nav_perm;
                 var j = 24 ^ bmak.ab(bmak.sensor_data);
@@ -714,7 +714,7 @@ var _cf = _cf || [],
             bmak.lvc(3)
         },
         rve: function () {
-            void 0 !== document.hidden ? (bmak.hn = "hidden", bmak.vc = "visibilitychange") : void 0 !== document.mozHidden ? (bmak.hn = "mozHidden", bmak.vc = "mozvisibilitychange") : void 0 !== document.msHidden ? (bmak.hn = "msHidden", bmak.vc = "msvisibilitychange") : void 0 !== document.webkitHidden && (bmak.hn = "webkitHidden", bmak.vc = "webkitvisibilitychange"), document.addEventListener ? "unk" != bmak.hn && document.addEventListener(bmak.vc, bmak.hvc, true) : document.attachEvent && "unk" != bmak.hn && document.attachEvent(bmak.vc, bmak.hvc), window.onblur = bmak.hb, window.onfocus = bmak.hf
+            undefined !== document.hidden ? (bmak.hn = "hidden", bmak.vc = "visibilitychange") : undefined !== document.mozHidden ? (bmak.hn = "mozHidden", bmak.vc = "mozvisibilitychange") : undefined !== document.msHidden ? (bmak.hn = "msHidden", bmak.vc = "msvisibilitychange") : undefined !== document.webkitHidden && (bmak.hn = "webkitHidden", bmak.vc = "webkitvisibilitychange"), document.addEventListener ? "unk" != bmak.hn && document.addEventListener(bmak.vc, bmak.hvc, true) : document.attachEvent && "unk" != bmak.hn && document.attachEvent(bmak.vc, bmak.hvc), window.onblur = bmak.hb, window.onfocus = bmak.hf
         },
         startTracking: function () {
             bmak.startdoadma();
@@ -725,7 +725,7 @@ var _cf = _cf || [],
             }
             setInterval(function () {
                 bmak.startdoadma()
-            }, 3e3), document.addEventListener ? (document.addEventListener("touchmove", bmak.htm, true), document.addEventListener("touchstart", bmak.hts, true), document.addEventListener("touchend", bmak.hte, true), document.addEventListener("touchcancel", bmak.htc, true), document.addEventListener("mousemove", bmak.hmm, true), document.addEventListener("click", bmak.hc, true), document.addEventListener("mousedown", bmak.hmd, true), document.addEventListener("mouseup", bmak.hmu, true), document.addEventListener("pointerdown", bmak.hpd, true), document.addEventListener("pointerup", bmak.hpu, true), document.addEventListener("keydown", bmak.hkd, true), document.addEventListener("keyup", bmak.hku, true), document.addEventListener("keypress", bmak.hkp, true)) : document.attachEvent && (document.attachEvent("touchmove", bmak.htm), document.attachEvent("touchstart", bmak.hts), document.attachEvent("touchend", bmak.hte), document.attachEvent("touchcancel", bmak.htc), document.attachEvent("onmousemove", bmak.hmm), document.attachEvent("onclick", bmak.hc), document.attachEvent("onmousedown", bmak.hmd), document.attachEvent("onmouseup", bmak.hmu), document.attachEvent("onpointerdown", bmak.hpd), document.attachEvent("onpointerup", bmak.hpu), document.attachEvent("onkeydown", bmak.hkd), document.attachEvent("onkeyup", bmak.hku), document.attachEvent("onkeypress", bmak.hkp)), bmak.rve(), bmak.informinfo = bmak.getforminfo(), bmak.js_post && (bmak.aj_type = 0, bmak.bpd(), bmak.pd(true)), bmak.firstLoad = !1
+            }, 3e3), document.addEventListener ? (document.addEventListener("touchmove", bmak.htm, true), document.addEventListener("touchstart", bmak.hts, true), document.addEventListener("touchend", bmak.hte, true), document.addEventListener("touchcancel", bmak.htc, true), document.addEventListener("mousemove", bmak.hmm, true), document.addEventListener("click", bmak.hc, true), document.addEventListener("mousedown", bmak.hmd, true), document.addEventListener("mouseup", bmak.hmu, true), document.addEventListener("pointerdown", bmak.hpd, true), document.addEventListener("pointerup", bmak.hpu, true), document.addEventListener("keydown", bmak.hkd, true), document.addEventListener("keyup", bmak.hku, true), document.addEventListener("keypress", bmak.hkp, true)) : document.attachEvent && (document.attachEvent("touchmove", bmak.htm), document.attachEvent("touchstart", bmak.hts), document.attachEvent("touchend", bmak.hte), document.attachEvent("touchcancel", bmak.htc), document.attachEvent("onmousemove", bmak.hmm), document.attachEvent("onclick", bmak.hc), document.attachEvent("onmousedown", bmak.hmd), document.attachEvent("onmouseup", bmak.hmu), document.attachEvent("onpointerdown", bmak.hpd), document.attachEvent("onpointerup", bmak.hpu), document.attachEvent("onkeydown", bmak.hkd), document.attachEvent("onkeyup", bmak.hku), document.attachEvent("onkeypress", bmak.hkp)), bmak.rve(), bmak.informinfo = bmak.getforminfo(), bmak.js_post && (bmak.aj_type = 0, bmak.bpd(), bmak.pd(true)), bmak.firstLoad = false
         },
         gb: function (a, t) {
             var e = a.charCodeAt(t);
@@ -742,12 +742,12 @@ var _cf = _cf || [],
                     if (parseFloat(navigator.appVersion.split("MSIE")[1]) <= 9) return true
                 }
             } catch (a) {}
-            return !1
+            return false
         },
         parse_gp: function (a) {},
         call_gp: function () {
             var a;
-            void 0 !== window.XMLHttpRequest ? a = new XMLHttpRequest : void 0 !== window.XDomainRequest ? (a = new XDomainRequest, a.onload = function () {
+            undefined !== window.XMLHttpRequest ? a = new XMLHttpRequest : undefined !== window.XDomainRequest ? (a = new XDomainRequest, a.onload = function () {
                 this.readyState = 4, this.onreadystatechange instanceof Function && this.onreadystatechange()
             }) : a = new ActiveXObject("Microsoft\.XMLHTTP"), a.open("GET", bmak.params_url, true), a.onreadystatechange = function () {
                 a.readyState > 3 && bmak.parse_gp && bmak.parse_gp(a)
@@ -763,9 +763,9 @@ var _cf = _cf || [],
         },
         apicall_bm: function (a, t, e) {
             var n;
-            void 0 !== window.XMLHttpRequest ? n = new XMLHttpRequest : void 0 !== window.XDomainRequest ? (n = new XDomainRequest, n.onload = function () {
+            undefined !== window.XMLHttpRequest ? n = new XMLHttpRequest : undefined !== window.XDomainRequest ? (n = new XDomainRequest, n.onload = function () {
                 this.readyState = 4, this.onreadystatechange instanceof Function && this.onreadystatechange()
-            }) : n = new ActiveXObject("Microsoft\.XMLHTTP"), n.open("POST", a, t), void 0 !== n.withCredentials && (n.withCredentials = true);
+            }) : n = new ActiveXObject("Microsoft\.XMLHTTP"), n.open("POST", a, t), undefined !== n.withCredentials && (n.withCredentials = true);
             var o = '\{"sensor_data":"' + bmak.sensor_data + '"\}';
             n.onreadystatechange = function () {
                 n.readyState > 3 && e && e(n)
@@ -784,7 +784,7 @@ var _cf = _cf || [],
         get_stop_signals: function () {
             var a = [-1, -1],
                 t = bmak.cookie_chk_read(bmak.ckie);
-            if (!1 !== t) try {
+            if (false !== t) try {
                 var e = decodeURIComponent(t).split("~");
                 if (e.length >= 4) {
                     var n = bmak.pi(e[1]),
@@ -795,7 +795,7 @@ var _cf = _cf || [],
             return a
         },
         patp: function (a) {
-            bmak.aj_ss++, bmak.rst = !1
+            bmak.aj_ss++, bmak.rst = false
         },
         get_mn_params_from_abck: function () {
             var a = [
@@ -803,7 +803,7 @@ var _cf = _cf || [],
             ];
             try {
                 var t = bmak.cookie_chk_read(bmak.ckie);
-                if (!1 !== t) {
+                if (false !== t) {
                     var e = decodeURIComponent(t).split("~");
                     if (e.length >= 5) {
                         var n = e[0],
@@ -903,6 +903,7 @@ var _cf = _cf || [],
             return e
         },
         mn_w: function () {
+            //Called when you get challenge cookie
             try {
                 for (var a = 0, t = 0, e = 0, n = "", o = bmak.get_cf_date(), m = bmak.mn_cd + bmak.mn_mc_indx; 0 == a;) {
                     n = Math.random().toString(16);
@@ -994,7 +995,7 @@ if (function (a) {
         a.fpcf = t, t.sf4 = function () {
             var a = bmak.uar();
             return !(!~a.indexOf("Version/4\.0") || !(~a.indexOf("iPad;") || ~a.indexOf("iPhone") || ~a.indexOf("Mac OS X 10_5")))
-        }, t.fpValstr = "-1", t.fpValCalculated = !1, t.rVal = "-1", t.rCFP = "-1", t.cache = {}, t.td = -999999, t.clearCache = function () {
+        }, t.fpValstr = "-1", t.fpValCalculated = false, t.rVal = "-1", t.rCFP = "-1", t.cache = {}, t.td = -999999, t.clearCache = function () {
             t.cache = {}
         }, t.fpVal = function () {
             t.fpValCalculated = true;
@@ -1017,21 +1018,21 @@ if (function (a) {
                 r = "default";
             return r = bmak.runFonts ? bmak.altFonts ? t.fonts_optm() : t.fonts() : "dis", [t.canvas("<@nv45\. F1n63r,Pr1n71n6!"), t.canvas("m,Ev!xV67BaU> eh2m<f3AG3@"), r, t.pluginInfo(), t.sessionStorageKey(), t.localStorageKey(), t.indexedDbKey(), t.timezoneOffsetKey(), t.webrtcKey(), a, e, n, o, m].join(";")
         }, t.PLUGINS = ["WebEx64 General Plugin Container", "YouTube Plug-in", "Java Applet Plug-in", "Shockwave Flash", "iPhotoPhotocast", "SharePoint Browser Plug-in", "Chrome Remote Desktop Viewer", "Chrome PDF Viewer", "Native Client", "Unity Player", "WebKit-integrierte PDF", "QuickTime Plug-in", "RealPlayer Version Plugin", "RealPlayer\(tm\) G2 LiveConnect-Enabled Plug-In \(32-bit\)", "Mozilla Default Plug-in", "Adobe Acrobat", "AdobeAAMDetect", "Google Earth Plug-in", "Java Plug-in 2 for NPAPI Browsers", "Widevine Content Decryption Module", "Microsoft Office Live Plug-in", "Windows Media Player Plug-in Dynamic Link Library", "Google Talk Plugin Video Renderer", "Edge PDF Viewer", "Shockwave for Director", "Default Browser Helper", "Silverlight Plug-In"], t.pluginInfo = function () {
-            if (void 0 === navigator.plugins) return null;
+            if (undefined === navigator.plugins) return null;
             for (var a = t.PLUGINS.length, e = "", n = 0; n < a; n++) {
                 var o = t.PLUGINS[n];
-                void 0 !== navigator.plugins[o] && (e = e + "," + n)
+                undefined !== navigator.plugins[o] && (e = e + "," + n)
             }
             return e
         }, t.canvas = function (a) {
             try {
-                if (void 0 !== t.cache.canvas) return t.cache.canvas;
+                if (undefined !== t.cache.canvas) return t.cache.canvas;
                 var e = -1;
                 if (!t.sf4()) {
                     var n = document.createElement("canvas");
                     if (n.width = 280, n.height = 60, n.style.display = "none", "function" == typeof n.getContext) {
                         var o = n.getContext("2d");
-                        o.fillStyle = "rgb\(102, 204, 0\)", o.fillRect(100, 5, 80, 50), o.fillStyle = "#f60", o.font = "16pt Arial", o.fillText(a, 10, 40), o.strokeStyle = "rgb\(120, 186, 176\)", o.arc(80, 10, 20, 0, Math.PI, !1), o.stroke();
+                        o.fillStyle = "rgb\(102, 204, 0\)", o.fillRect(100, 5, 80, 50), o.fillStyle = "#f60", o.font = "16pt Arial", o.fillText(a, 10, 40), o.strokeStyle = "rgb\(120, 186, 176\)", o.arc(80, 10, 20, 0, Math.PI, false), o.stroke();
                         var m = n.toDataURL();
                         e = 0;
                         for (var r = 0; r < m.length; r++) {
@@ -1083,7 +1084,7 @@ if (function (a) {
                 if (bmak.get_cf_date() - e > a) return "";
                 document.body.appendChild(k);
                 for (var l = 0; l < k.childNodes.length; l++) {
-                    var _ = !1,
+                    var _ = false,
                         u = k.childNodes[l];
                     for (c = 0; c < u.childNodes.length; c++) {
                         var b = u.childNodes[c];
@@ -1108,7 +1109,7 @@ if (function (a) {
                 var r;
                 for (r = 0; r < e.length; r++) m.style.fontFamily = e[r], document.body.appendChild(m), n[r] = m.offsetWidth, o[r] = m.offsetHeight, document.body.removeChild(m);
                 for (var i = ["Geneva", "Lobster", "New York", "Century", "Apple Gothic", "Minion Pro", "Apple LiGothic", "Century Gothic", "Monaco", "Lato", "Fantasque Sans Mono", "Adobe Braille", "Cambria", "Futura", "Bell MT", "Courier", "Courier New", "Calibri", "Avenir Next", "Birch Std", "Palatino", "Ubuntu Regular", "Oswald", "Batang", "Ubuntu Medium", "Cantarell", "Droid Serif", "Roboto", "Helvetica Neue", "Corsiva Hebrew", "Adobe Hebrew", "TI-Nspire", "Comic Neue", "Noto", "AlNile", "Palatino-Bold", "ArialHebrew-Light", "Avenir", "Papyrus", "Open Sans", "Times", "Quicksand", "Source Sans Pro", "Damascus", "Microsoft Sans Serif"], c = [], b = 0; b < i.length; b++) {
-                    var d = !1;
+                    var d = false;
                     for (r = 0; r < e.length; r++)
                         if (m.style.fontFamily = i[b] + "," + e[r], document.body.appendChild(m), m.offsetWidth === n[r] && m.offsetHeight === o[r] || (d = true), document.body.removeChild(m), d) {
                             c.push(b);
@@ -1130,13 +1131,13 @@ if (function (a) {
             try {
                 return !!window.sessionStorage
             } catch (a) {
-                return !1
+                return false
             }
         }, t.hasLocalStorage = function () {
             try {
                 return !!window.localStorage
             } catch (a) {
-                return !1
+                return false
             }
         }, t.hasIndexedDB = function () {
             return !!window.indexedDB
