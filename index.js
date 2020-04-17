@@ -172,6 +172,28 @@ app.on('ready', () => {
 
 	async function sensorGen(bmak, abck, ua_browser, userAgent, proxy, site, post_url, formInfo, cookieJar) {
 		var g = "", w = "", y = "";
+		if(abck.includes("\|\|")) {
+			bmak = await mn_poll(abck, bmak);
+
+			var h = await mn_get_current_challenges(abck);
+			if (undefined !== h[1]) {
+				logger.green('challenge 1 g')
+				var C = h[1];
+				undefined !== bmak.mn_r[C] && (g = bmak.mn_r[C])
+			}
+			if (undefined !== h[2]) {
+				var E = h[2];
+				logger.green('challenge 2 w ' + bmak.mn_r[E])
+				if(undefined !== bmak.mn_r[E]) w = bmak.mn_r[E]
+				logger.red('w ' + w)
+			}
+			if (undefined !== h[3]) {
+				logger.green('challenge 3 y')
+				var S = h[3];
+				undefined !== bmak.mn_r[S] && (y = bmak.mn_r[S])
+			}
+		}
+
 		to(bmak);
 		var sensor_data =
 			bmak.ver +
@@ -208,17 +230,17 @@ app.on('ready', () => {
 			"-1,2,-94,-122," +
 			sed() +
 			"-1,2,-94,-123," +
-			g
+			g +
 			//h function (undefined)
 			"-1,2,-94,-124," +
-			w
+			w + 
 			//g function (undefined)
 			"-1,2,-94,-126," +
-			y
+			y +
 			"-1,2,-94,-127," +
 			bmak.nav_perm;
 
-		var w = ab(sensor_data);
+		var k = ab(sensor_data);
 
 		sensor_data =
 			sensor_data +
@@ -229,7 +251,7 @@ app.on('ready', () => {
 			"-1,2,-94,-116," +
 			to(bmak) +
 			"-1,2,-94,-118," +
-			w +
+			k +
 			"-1,2,-94,-121,";
 		var sensor = gen_key(sensor_data);
 		//logger.yellow(sensor);
@@ -271,7 +293,6 @@ app.on('ready', () => {
 					var abck = cookies.find(x => x.name === "_abck").value;
 					var verify = verify_abck(abck, site, true);
 					verify.success ? logger.green(JSON.stringify(verify)) : logger.red(JSON.stringify(verify));
-					await mn_poll(abck, bmak)
 					init(site, userAgent, ua_browser, proxy, abck, post_url, cookieJar);
 				}).catch((e) => logger.red(e.message));
 			});
@@ -314,7 +335,6 @@ app.on('ready', () => {
 		// return cloudscraper(params).then(response => {
 		// 	abck = response.headers['set-cookie'].toString().split("_abck=")[1].split("; Domain")[0];
 		// 	logger.blue(JSON.stringify(verify_abck(abck, site)));
-		// 	logger.white('')
 			// init(site, userAgent, ua_browser, proxy, abck, post_url, cookieJar);
 		// }).catch(e => {
 		// 	logger.red(e.message == "Error: ESOCKETTIMEDOUT" ? `[POST] Proxy Banned` : `[POST] ${e.message}`)
@@ -361,7 +381,9 @@ app.on('ready', () => {
 			['1024', '1024', '1024', '1024', '1024', '1024', '1024'],
 			['1680', '973', '1680', '1050', '1133', '862', '1680'],
 			['1680', '973', '1680', '1050', '1680', '862', '1680'],
-			['1024', '768', '1024', '768', '1256', '605', '1272']
+			['1024', '768', '1024', '768', '1256', '605', '1272'],
+			['1360', '728', '1360', '768', '1360', '625', '1358'],
+			['1440', '797', '1440', '900', '1440', '685', '1440']
 		]);
 	}
 
@@ -830,28 +852,12 @@ app.on('ready', () => {
  * @param {Challenge Cookie Code}
  */
 
-	function controller(abck, bmak){
-		var h = mn_get_current_challenges(abck);
-		if (undefined !== h[1]) {
-			var C = h[1];
-			undefined !== bmak.mn_r[C] && (g = bmak.mn_r[C])
-		}
-		if (undefined !== h[2]) {
-			var E = h[2];
-			undefined !== bmak.mn_r[E] && (w = bmak.mn_r[E])
-		}
-		if (undefined !== h[3]) {
-			var S = h[3];
-			undefined !== bmak.mn_r[S] && (y = bmak.mn_r[S])
-		}
-	}
-
 	async function mn_poll(abck, bmak) {
 		if (0 == bmak.mn_state) {
-			var a = get_mn_params_from_abck(abck),
-				t = mn_get_new_challenge_params(a, bmak);
-			null != t && (mn_update_challenge_details(t, bmak));
-			await mn_w(bmak)
+			var a = await get_mn_params_from_abck(abck),
+				t = await mn_get_new_challenge_params(a, bmak);
+			null != t && (await mn_update_challenge_details(t, bmak));
+			return await mn_w(bmak)
 		}
 	}
 
@@ -889,8 +895,8 @@ app.on('ready', () => {
 		return a	
 	}
 
-	function mn_get_current_challenges(abck) {
-		var a = get_mn_params_from_abck(abck),
+	async function mn_get_current_challenges(abck) {
+		var a = await get_mn_params_from_abck(abck),
 			t = [];
 		if (null != a)
 			for (var e = 0; e < a.length; e++) {
@@ -905,7 +911,7 @@ app.on('ready', () => {
 	}
 
 	function mn_update_challenge_details(a, bmak) {
-		bmak.mn_sen = a[0], bmak.mn_abck = a[1], bmak.mn_psn = a[2], bmak.mn_cd = a[3], bmak.mn_tout = a[4], bmak.mn_stout = a[5], bmak.mn_ct = a[6], bmak.mn_ts = bmak.start_ts, bmak.mn_cc = bmak.mn_abck + bmak.start_ts + bmak.mn_psn
+		bmak.mn_sen = a[0], bmak.mn_abck = a[1], bmak.mn_psn = a[2], bmak.mn_cd = a[3], bmak.mn_tout = a[4], bmak.mn_stout = a[5], bmak.mn_ct = a[6], bmak.mn_ts = bmak.start_ts, bmak.mn_cc = bmak.mn_abck + bmak.start_ts + bmak.mn_psn;
 	}
 
 	function mn_get_new_challenge_params(a, bmak) {
@@ -931,10 +937,10 @@ app.on('ready', () => {
 				var r = bmak.mn_cc + m.toString() + n,
 					i = mn_h(r);
 				if (0 == bdm(i, m)) a = 1, e = get_cf_date() - o, bmak.mn_al.push(n), bmak.mn_tcl.push(e), bmak.mn_il.push(t), 0 == bmak.mn_mc_indx && (bmak.mn_lg.push(bmak.mn_abck), bmak.mn_lg.push(bmak.mn_ts), bmak.mn_lg.push(bmak.mn_psn), bmak.mn_lg.push(bmak.mn_cc), bmak.mn_lg.push(bmak.mn_cd.toString()), bmak.mn_lg.push(m.toString()), bmak.mn_lg.push(n), bmak.mn_lg.push(r), bmak.mn_lg.push(i));
-				else if ((t += 1) % 1e3 == 0 && (e = get_cf_date() - o) > bmak.mn_stout) return setTimeout(mn_w, 1e3 + bmak.mn_stout);
+				else if ((t += 1) % 1e3 == 0 && (e = get_cf_date() - o) > bmak.mn_stout) return setTimeout(mn_w(bmak), 1e3 + bmak.mn_stout);
 			}
-			bmak.mn_mc_indx += 1, bmak.mn_mc_indx < bmak.mn_mc_lmt ? mn_w(bmak) : (bmak.mn_mc_indx = 0, bmak.mn_lc[bmak.mn_lcl] = bmak.mn_cc, bmak.mn_ld[bmak.mn_lcl] = bmak.mn_cd, bmak.mn_lcl = bmak.mn_lcl + 1, bmak.mn_state = 0, bmak.mn_r[bmak.mn_abck + bmak.mn_psn] = mn_pr(bmak))
-			// logger.green(mn_pr(bmak));
+			bmak.mn_mc_indx += 1, bmak.mn_mc_indx < bmak.mn_mc_lmt ? await mn_w(bmak) : (bmak.mn_mc_indx = 0, bmak.mn_lc[bmak.mn_lcl] = bmak.mn_cc, bmak.mn_ld[bmak.mn_lcl] = bmak.mn_cd, bmak.mn_lcl = bmak.mn_lcl + 1, bmak.mn_state = 0, bmak.mn_r[bmak.mn_abck + bmak.mn_psn] = await mn_pr(bmak), logger.white(bmak.mn_r[bmak.mn_abck + bmak.mn_psn]));
+			return bmak;
 		} catch (a) {
 			logger.red('exception on line ' + a.stack)
 		}

@@ -224,7 +224,7 @@
 			"Cache-Control":"no-cache"
 		},
         "valid_check": ["~-1~", "=~-"],
-		"error_page": null
+		"error_page": "https://www.footlocker.co.uk/en/homepage"
 	},
 	{
 		"name":"champssports",
