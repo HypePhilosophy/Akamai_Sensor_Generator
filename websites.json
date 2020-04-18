@@ -118,7 +118,7 @@
 			"Connection":"keep-alive",
 			"Cache-Control":"no-cache"
 		},
-        "valid_check": ["=="],
+        "valid_check": ["~-1~","=="],
 		"error_page": null
 	},
 	{
@@ -160,7 +160,7 @@
 			"Connection":"keep-alive",
 			"Cache-Control":"no-cache"
 		},
-        "valid_check": [],
+        "valid_check": ["~-1~", "~-1~-1~-1", "!=="],
 		"error_page": null
 	},
 	{
@@ -181,7 +181,7 @@
 			"Connection":"keep-alive",
 			"Cache-Control":"no-cache"
 		},
-        "valid_check": ["~-1~", "="],
+        "valid_check": ["~-1~", "=", "!=="],
 		"error_page": null
 	},
 	{
