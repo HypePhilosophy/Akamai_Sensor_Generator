@@ -692,6 +692,11 @@ var _cf = _cf || [],
             return a > t && a <= e && (a += n % (e - t)) > e && (a = a - e + t), a
         },
         lvc: function (a) {
+            /*
+            1 = webkit visibility change
+            2 = on blur
+            3 = on focus
+            */
             try {
                 if (bmak.vc_cnt < 100) {
                     var t = bmak.get_cf_date() - bmak.start_ts,
@@ -702,15 +707,18 @@ var _cf = _cf || [],
             } catch (a) {}
         },
         hvc: function () {
+            //webkit visibility change
             try {
                 var a = 1;
                 document[bmak.hn] && (a = 0), bmak.lvc(a)
             } catch (a) {}
         },
         hb: function (a) {
+            //window on blur
             bmak.lvc(2)
         },
         hf: function (a) {
+            //window on focus
             bmak.lvc(3)
         },
         rve: function () {

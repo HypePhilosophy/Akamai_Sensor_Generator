@@ -31,7 +31,7 @@
     "request": "^2.88.0",
     "request-promise": "^4.2.5",
     "url": "^0.11.0",
-    "user-agents": "^1.0.491",
+    "user-agents": "^1.0.559",
     "uuid": "^3.4.0"
   },
   "devDependencies": {
