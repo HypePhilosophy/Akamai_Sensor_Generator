@@ -292,7 +292,7 @@ app.on('ready', () => {
 				akamaiSession.cookies.get({}).then(async (cookies) => {
 					var abck = cookies.find(x => x.name === "_abck").value;
 					var verify = verify_abck(abck, site, true);
-					verify.success ? logger.green(JSON.stringify(verify)) : logger.red(JSON.stringify(verify));
+					verify.success ? logger.green(JSON.stringify(verify)) && writeToFile(abck) : logger.red(JSON.stringify(verify));
 					init(site, userAgent, ua_browser, proxy, abck, post_url, cookieJar);
 				}).catch((e) => logger.red(e.message));
 			});
@@ -1008,7 +1008,7 @@ app.on('ready', () => {
 	}
 
 	function writeToFile(abck){
-		fs.appendFile('abck.txt', abck, (e) => {
+		fs.appendFile('footpatrol_abck.txt', abck, (e) => {
 			if (e) throw e.message;
 		});
 	}
