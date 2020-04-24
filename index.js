@@ -41,7 +41,7 @@ app.on('ready', () => {
 	var userAgent = new UserAgent([/Chrome/, {deviceCategory: 'desktop', platform: 'MacIntel'}]).toString().replace(/\|"/g, "");
 	var ua_browser = userAgent.toString().replace(/\|"/g, "").indexOf("Chrome") > -1 ? "chrome" : userAgent.toString().replace(/\|"/g, "").indexOf("Safari") > -1 ? "safari" : userAgent.toString().replace(/\|"/g, "").indexOf("Firefox") > -1 ? "firefox" : "ie";
 	akamaiSession.setUserAgent(userAgent);
-	init('footpatrol', userAgent, ua_browser, undefined, undefined)
+	init('footlockeruk', userAgent, ua_browser, undefined, undefined)
 
 	async function init(site, userAgent, ua_browser, proxy, abck, post_url, cookieJar){
 		var site = (abck == null) ? websites.find(w => w.name === site) : site,
