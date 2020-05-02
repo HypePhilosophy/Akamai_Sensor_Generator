@@ -1,5 +1,26 @@
 [
 	{
+		"name":"bestbuy",
+		"ver":"1.54",
+		"url":"https://www.bestbuy.com/",
+		"host":"www.bestbuy.com",
+		"headers":{
+			"accept":"text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+			"accept-encoding":"gzip, deflate, br",
+			"accept-language":"en-US,en;q=0.9",
+			"dnt":"1",
+			"sec-fetch-mode":"navigate",
+			"sec-fetch-site":"none",
+			"sec-fetch-user":"?1",
+			"upgrade-insecure-requests":"1",
+			"Host":"www.bestbuy.com",
+			"Connection":"keep-alive",
+			"Cache-Control":"no-cache"
+		},
+        "valid_check": ["~0~", "="],
+		"error_page": "https://www.bestbuy.com/"
+	},
+	{
 		"name":"dicks",
 		"ver":"1.54",
 		"url":"https://www.dickssportinggoods.com/",
@@ -202,7 +223,7 @@
 			"Connection":"keep-alive",
 			"Cache-Control":"no-cache"
 		},
-        "valid_check": ["~0~"],
+        "valid_check": ["~0~", "="],
 		"error_page": null
 	},
 	{
