@@ -30,8 +30,11 @@ let cookie_counter = 0,
 	akamaiSession,
 	dataNum = lodash.random(0, browserData.length);
 app.allowRendererProcessReuse = false;
-app.on('ready', () => {
+app.on('ready', async () => {
+	var site = 'footlocker';
+	site = websites.find(w => w.name === site);
 	let win = new BrowserWindow({'show': false});
+	
 	// win.loadURL(
 	// 	url.format({
 	// 	  pathname: path.join(__dirname, "index.html"),
@@ -39,21 +42,21 @@ app.on('ready', () => {
 	// 	  slashes: true
 	// 	})
 	//   );
-	win.loadURL('https://www.footlocker.com/')
+	win.loadURL(site.url)
 	akamaiSession = session.fromPartition('akamai', {cache: false});
 	// var userAgent = new UserAgent([/Chrome/, {deviceCategory: 'desktop', platform: 'MacIntel'}]).toString().replace(/\|"/g, "");
 	var userAgent = browserData[dataNum].userAgent.replace(/\|"/g, "");
 	var ua_browser = userAgent.toString().replace(/\|"/g, "").indexOf("Chrome") > -1 ? "chrome" : userAgent.toString().replace(/\|"/g, "").indexOf("Safari") > -1 ? "safari" : userAgent.toString().replace(/\|"/g, "").indexOf("Firefox") > -1 ? "firefox" : "ie";
 	akamaiSession.setUserAgent(userAgent);
-	init('footlocker', userAgent, ua_browser, undefined, undefined)
+	var formInfo = await getforminfo();
+	init(site, userAgent, ua_browser, null, null, null, formInfo)
 
-	async function init(site, userAgent, ua_browser, proxy, abck, post_url, cookieJar){
+	async function init(site, userAgent, ua_browser, proxy, abck, post_url, formInfo){
 		// akamaiSession.cookies.get({})
         //   .then((cookies) => {
 		// 	  console.log(cookies)
 		//   })
-		var site = (abck == null) ? websites.find(w => w.name === site) : site,
-			bmak = {
+		var bmak = {
 				aj_indx: 0,
 				aj_type: 0,
 				den: 0,
@@ -112,11 +115,10 @@ app.on('ready', () => {
 				y: Math.floor(1e3 * Math.random()).toString(),
 				z1: 0,
 				z: -1
-			},
-			formInfo = await getforminfo(site, userAgent, proxy);
+			};
 		abck == null ? await switcher('minimal', bmak) : await switcher('nomouse', bmak);
 		// await switcher('nomouse', bmak);
-		abck == null ? get_abck(site, bmak, userAgent, ua_browser, formInfo, proxy) : sensorGen(bmak, abck, ua_browser, userAgent, proxy, site, post_url, formInfo, cookieJar);
+		abck == null ? get_abck(site, bmak, userAgent, ua_browser, formInfo, proxy) : sensorGen(bmak, abck, ua_browser, userAgent, proxy, site, post_url, formInfo);
 	}
 
 	async function get_abck(site, bmak, userAgent, ua_browser, formInfo, proxy) {
@@ -268,13 +270,21 @@ app.on('ready', () => {
 		validator(sensor, bmak, formInfo, userAgent, ua_browser, proxy, site, post_url, abck)
 	}
 
-	function validator(sensor, bmak, formInfo, userAgent, ua_browser, proxy, site, post_url, abck) {
-		// console.log(`abck=${abck}; check=true;`)
+	async function validator(sensor, bmak, formInfo, userAgent, ua_browser, proxy, site, post_url, abck) {
+		var ak_bmsc;
+		var bm_sz;
+		await akamaiSession.cookies.get({})
+          .then((cookies) => {
+			ak_bmsc = cookies.find(x => x.name === "ak_bmsc").value;
+			bm_sz = cookies.find(x => x.name === "bm_sz").value;
+		  })
+		//   console.log(`DCT_Exp_HUNDRED=DCT; bm_sz=${bm_sz}; ak_bmsc=${ak_bmsc}; _abck=${abck}; check=true`)
+
 		var options = {
 			'method': 'POST',
 			'url': `https://${site.host}/${post_url}`, 
-			// 'session': akamaiSession,
-			// 'useSessionCookies': true,
+			'session': akamaiSession,
+			'useSessionCookies': true,
 			'hostname': site.host,
 			headers: {
 				'sec-fetch-dest': 'empty',
@@ -289,7 +299,7 @@ app.on('ready', () => {
 				'accept-encoding': 'gzip, deflate, br',
 				'accept-language': 'en-US,en;q=0.9,fr;q=0.8,de;q=0.7',
 				'dnt': '1',
-				'cookie': `DCT_Exp_HUNDRED=DCT; _abck=${abck}; check=true;`
+				'Cookie': `DCT_Exp_HUNDRED=DCT; bm_sz=${bm_sz}; ak_bmsc=${ak_bmsc}; _abck=${abck}; check=true`
 			},
 		};
 		
@@ -305,7 +315,7 @@ app.on('ready', () => {
 					var abck = cookies.find(x => x.name === "_abck").value;
 					var verify = verify_abck(abck, site, true);
 					verify.success ? logger.green(JSON.stringify(verify)) && writeToFile(abck) : logger.red(JSON.stringify(verify));
-					init(site, userAgent, ua_browser, proxy, abck, post_url);
+					init(site, userAgent, ua_browser, proxy, abck, post_url, formInfo);
 				}).catch((e) => logger.red(e.message));
 			});
 		
@@ -315,7 +325,11 @@ app.on('ready', () => {
 		});
 		
 		var postData = `{\"sensor_data\":\"${sensor.toString()}\"}`;
-
+		// req.setHeader("Cookie", 'DCT_Exp_HUNDRED=DCT')
+		// req.setHeader("Cookie", `bm_sz=${bm_sz}`)
+		// req.setHeader("Cookie", `ak_bmsc=${ak_bmsc}`)
+		// req.setHeader("Cookie", `_abck=${abck};`)
+		
 		req.write(postData);
 
 		logger.yellow(sensor)
