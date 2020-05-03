@@ -32,13 +32,14 @@ let cookie_counter = 0,
 app.allowRendererProcessReuse = false;
 app.on('ready', () => {
 	let win = new BrowserWindow({'show': false});
-	win.loadURL(
-		url.format({
-		  pathname: path.join(__dirname, "index.html"),
-		  protocol: "file:",
-		  slashes: true
-		})
-	  );
+	// win.loadURL(
+	// 	url.format({
+	// 	  pathname: path.join(__dirname, "index.html"),
+	// 	  protocol: "file:",
+	// 	  slashes: true
+	// 	})
+	//   );
+	win.loadURL('https://www.footlocker.com/')
 	akamaiSession = session.fromPartition('akamai', {cache: false});
 	// var userAgent = new UserAgent([/Chrome/, {deviceCategory: 'desktop', platform: 'MacIntel'}]).toString().replace(/\|"/g, "");
 	var userAgent = browserData[dataNum].userAgent.replace(/\|"/g, "");
@@ -118,7 +119,7 @@ app.on('ready', () => {
 		abck == null ? get_abck(site, bmak, userAgent, ua_browser, formInfo, proxy) : sensorGen(bmak, abck, ua_browser, userAgent, proxy, site, post_url, formInfo, cookieJar);
 	}
 
-	function get_abck(site, bmak, userAgent, ua_browser, formInfo, proxy) {
+	async function get_abck(site, bmak, userAgent, ua_browser, formInfo, proxy) {
 		var post_url,
 			req = net.request({
 				method: "GET",
@@ -138,21 +139,22 @@ app.on('ready', () => {
 
 		req.on("response", (response) => {
 			response.on("error", e => reject(e));
+			
 			response.on('data', (chunk) => {
 				var body = chunk.toString('utf8');
 				var post_url_match = /src="\/(static|assets|api|resources|public)\/(\w+)/gm.exec(body);
 				if(post_url_match == null) return;
 				post_url = `${post_url_match[1]}/${post_url_match[2]}`;
 			});
+
 			response.on('end', () => {
 				akamaiSession.cookies.get({}).then((cookies) => {
 					var abck = cookies.find(x => x.name === "_abck").value;
-					sensorGen(bmak, abck, ua_browser, userAgent, proxy, site, post_url, formInfo, cookieJar);
+					sensorGen(bmak, abck, ua_browser, userAgent, proxy, site, post_url, formInfo);
 				}).catch((e) => logger.red('exception ' + e.stack));
 			});
 		});
 		req.end();
-		var cookieJar = new rp.jar();
 
 		// var params = {
 		// 	method: 'GET',
@@ -178,7 +180,7 @@ app.on('ready', () => {
 		// })
 	}
 
-	async function sensorGen(bmak, abck, ua_browser, userAgent, proxy, site, post_url, formInfo, cookieJar) {
+	async function sensorGen(bmak, abck, ua_browser, userAgent, proxy, site, post_url, formInfo) {
 		var g = "", w = "", y = "";
 		if(abck.includes("\|\|")) {
 			bmak = await mn_poll(abck, bmak);
@@ -201,7 +203,9 @@ app.on('ready', () => {
 			}
 		}
 
-		// to(bmak);
+		var a = get_cf_date() % 1e7;
+		bmak.d3 = a;
+
 		var sensor_data =
 			bmak.ver +
 			"-1,2,-94,-100," +
@@ -261,16 +265,16 @@ app.on('ready', () => {
 			k +
 			"-1,2,-94,-121,";
 		var sensor = await gen_key(sensor_data, bmak);
-		validator(sensor, bmak, formInfo, userAgent, ua_browser, proxy, site, post_url, cookieJar)
+		validator(sensor, bmak, formInfo, userAgent, ua_browser, proxy, site, post_url, abck)
 	}
 
-	function validator(sensor, bmak, formInfo, userAgent, ua_browser, proxy, site, post_url, cookieJar) {
-
+	function validator(sensor, bmak, formInfo, userAgent, ua_browser, proxy, site, post_url, abck) {
+		// console.log(`abck=${abck}; check=true;`)
 		var options = {
 			'method': 'POST',
 			'url': `https://${site.host}/${post_url}`, 
-			'session': akamaiSession,
-			'useSessionCookies': true,
+			// 'session': akamaiSession,
+			// 'useSessionCookies': true,
 			'hostname': site.host,
 			headers: {
 				'sec-fetch-dest': 'empty',
@@ -285,6 +289,7 @@ app.on('ready', () => {
 				'accept-encoding': 'gzip, deflate, br',
 				'accept-language': 'en-US,en;q=0.9,fr;q=0.8,de;q=0.7',
 				'dnt': '1',
+				'cookie': `DCT_Exp_HUNDRED=DCT; _abck=${abck}; check=true;`
 			},
 		};
 		
@@ -300,7 +305,7 @@ app.on('ready', () => {
 					var abck = cookies.find(x => x.name === "_abck").value;
 					var verify = verify_abck(abck, site, true);
 					verify.success ? logger.green(JSON.stringify(verify)) && writeToFile(abck) : logger.red(JSON.stringify(verify));
-					init(site, userAgent, ua_browser, proxy, abck, post_url, cookieJar);
+					init(site, userAgent, ua_browser, proxy, abck, post_url);
 				}).catch((e) => logger.red(e.message));
 			});
 		
@@ -679,76 +684,125 @@ app.on('ready', () => {
 	}
 
 	async function getforminfo(site, userAgent, proxy) {
-		var a = "",
-			error_url = (site.error_page != null) ? site.error_page : `https://${site.host}/${randomstring.generate({length: 5,charset: 'alphabetic'})}`;
-		// var params = {
-		// 	method: 'GET',
-		// 	url: error_url,
-			// headers: {
-			// 	...site.headers,
-			// 	'user-agent': userAgent
-			// },
-		// 	proxy: proxy !== undefined ? `http://${proxy}` : null,
-		// 	timeout: 2000,
-		// 	html: true,
-		// 	resolveWithFullResponse: true,
-		// }
-		var options = {
-			'method': 'GET',
-			'url': error_url, 
-			'hostname': site.host,
-			headers: {
-				'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-				'user-agent': userAgent,
-				'sec-fetch-site': 'none',
-				'sec-fetch-mode': 'navigate',
-				'accept-encoding': 'gzip, deflate, br',
-				'accept-language': 'en-US,en;q=0.9'
-			}
-		};
+		// var a = "",
+		// 	error_url = (site.error_page != null) ? site.error_page : `https://${site.host}/${randomstring.generate({length: 5,charset: 'alphabetic'})}`;
+		// // var params = {
+		// // 	method: 'GET',
+		// // 	url: error_url,
+		// 	// headers: {
+		// 	// 	...site.headers,
+		// 	// 	'user-agent': userAgent
+		// 	// },
+		// // 	proxy: proxy !== undefined ? `http://${proxy}` : null,
+		// // 	timeout: 2000,
+		// // 	html: true,
+		// // 	resolveWithFullResponse: true,
+		// // }
+		// var options = {
+		// 	'method': 'GET',
+		// 	'url': 'https://www.footlocker.com/', 
+		// 	'hostname': site.host,
+		// 	headers: {
+		// 		'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+		// 		'user-agent': userAgent,
+		// 		'sec-fetch-site': 'none',
+		// 		'sec-fetch-mode': 'navigate',
+		// 		'accept-encoding': 'gzip, deflate, br',
+		// 		'accept-language': 'en-US,en;q=0.9'
+		// 	}
+		// };
 
-		var req = net.request(options, function (res) {
-			var body = '';
+		// var req = await net.request(options, function (res) {
+		// 	var body = '';
 		
-			res.on("data", function (chunk) {
-				body += chunk;
-			});
+		// 	res.on("data", function (chunk) {
+		// 		body += chunk;
+		// 	});
 		
-			res.on("end", function (chunk) {
-				temp(body);
-			});
+		// 	res.on("end", function (chunk) {
+		// 		console.log('end')
+		// 		temp(body);
+		// 	});
 		
-			res.on("error", function (error) {
-			console.error(error);
-			});
+		// 	res.on("error", function (error) {
+		// 		console.log('err ' + error)
+		// 		temp(body)
+		// 	});
+		// });
+
+		// await req.end();
+		var a = '';
+		await win.webContents.executeJavaScript(`
+			function temp(){
+				var a = '';
+				var size = document.getElementsByTagName("input").length;
+				for (var t = "", n = -1, o = 0; o < size; o++) {
+					var m = document.getElementsByTagName("input")[o],
+						r = ab(m.getAttribute("name")),
+						i = ab(m.getAttribute("id")),
+						c = m.getAttribute("required"),
+						b = null == c ? 0 : 1,
+						d = m.getAttribute("type"),
+						k = null == d ? -1 : get_type(d),
+						s = m.getAttribute("autocomplete");
+					null == s ? n = -1 : (s = s.replace(/\\\"/g, '').replace('/', '').toLowerCase(), n = "off" == s ? 0 : "on" == s ? 1 : 2);
+					var l = m.defaultValue.replace(/\\\"/g, '').replace('/', ''),
+						u = m.value.replace(/\\\"/g, '').replace('/', ''),
+						_ = 0,
+						f = 0;
+					l && 0 != l.length && (f = 1), !u || 0 == u.length || f && u == l || (_ = 1), 
+					2 != k && (a = a + k + "," + n + "," + _ + "," + b + "," + i + "," + r + "," + f + ";"), 
+					t = t + _ + ";"
+				}
+				return a;
+			}
+
+			function ab(a) {
+				if (null == a) return -1;
+				for (var t = 0, e = 0; e < a.replace(/\\\"/g, '').replace('/', '').length; e++) {
+					var n = a.replace(/\\\"/g, '').replace('/', '').charCodeAt(e);
+					n < 128 && (t += n);
+				}
+		
+				return t;
+			}
+
+			function get_type(a) {
+				return a = a.replace(/\\\"/g, '').toLowerCase(), "text" == a || "search" == a || "url" == a || "email" == a || "tel" == a || "number" == a ? 0 : "password" == a ? 1 : 2
+			}
+
+			temp();
+		`).then((response) => { 
+			a = response;
 		});
-
-		req.end()
-		async function temp(doc) {
-			const dom = new JSDOM(doc);
-			var size = dom.window.document.getElementsByTagName("input").length;
-			logger.green(`${size} inputs`);
-			for (var t = "", n = -1, o = 0; o < size; o++) {
-				var m = dom.window.document.getElementsByTagName("input")[o],
-					r = ab(m.getAttribute("name")),
-					i = ab(m.getAttribute("id")),
-					c = m.getAttribute("required"),
-					b = null == c ? 0 : 1,
-					d = m.getAttribute("type"),
-					k = null == d ? -1 : get_type(d),
-					s = m.getAttribute("autocomplete");
-				null == s ? n = -1 : (s = s.replace(/\\\"/g, '').replace('/', '').toLowerCase(), n = "off" == s ? 0 : "on" == s ? 1 : 2);
-				var l = m.defaultValue.replace(/\\\"/g, '').replace('/', ''),
-					u = m.value.replace(/\\\"/g, '').replace('/', ''),
-					_ = 0,
-					f = 0;
-				l && 0 != l.length && (f = 1), !u || 0 == u.length || f && u == l || (_ = 1), 
-				2 != k && (a = a + k + "," + n + "," + _ + "," + b + "," + i + "," + r + "," + f + ";"), 
-				t = t + _ + ";"
-			}
-		}
-		// await cloudscraper(params).then(response => temp(response.body)).catch((e) => temp(e.message));
 		return a;
+
+		// async function temp(doc) {
+		// 	// console.log(doc)
+		// 	const dom = new JSDOM(options, {runScripts: "dangerously"});
+		// 	var size = dom.window.document.getElementsByTagName("input").length;
+		// 	logger.green(`${size} inputs`);
+		// 	for (var t = "", n = -1, o = 0; o < size; o++) {
+		// 		var m = dom.window.document.getElementsByTagName("input")[o],
+		// 			r = ab(m.getAttribute("name")),
+		// 			i = ab(m.getAttribute("id")),
+		// 			c = m.getAttribute("required"),
+		// 			b = null == c ? 0 : 1,
+		// 			d = m.getAttribute("type"),
+		// 			k = null == d ? -1 : get_type(d),
+		// 			s = m.getAttribute("autocomplete");
+		// 		null == s ? n = -1 : (s = s.replace(/\\\"/g, '').replace('/', '').toLowerCase(), n = "off" == s ? 0 : "on" == s ? 1 : 2);
+		// 		var l = m.defaultValue.replace(/\\\"/g, '').replace('/', ''),
+		// 			u = m.value.replace(/\\\"/g, '').replace('/', ''),
+		// 			_ = 0,
+		// 			f = 0;
+		// 		l && 0 != l.length && (f = 1), !u || 0 == u.length || f && u == l || (_ = 1), 
+		// 		2 != k && (a = a + k + "," + n + "," + _ + "," + b + "," + i + "," + r + "," + f + ";"), 
+		// 		t = t + _ + ";"
+		// 	}
+		// }
+		// await cloudscraper(params).then(response => temp(response.body)).catch((e) => temp(e.message));
+		// return a;
 	}
 
 	function get_type(a) {
