@@ -28,12 +28,31 @@ console.error = (e) => {
 
 let cookie_counter = 0,
 	akamaiSession,
+	akamaiSession2
 	dataNum = lodash.random(0, browserData.length);
 app.allowRendererProcessReuse = false;
+app.commandLine.appendSwitch('disable-site-isolation-trials');
+
 app.on('ready', async () => {
+	akamaiSession = session.fromPartition('akamai', {cache: false});
+	akamaiSession2 = session.fromPartition('akamai2', {cache: false});
 	var site = 'footlocker';
 	site = websites.find(w => w.name === site);
-	let win = new BrowserWindow({'show': false});
+	var userAgent = browserData[dataNum].userAgent.replace(/\|"/g, "");
+	var ua_browser = userAgent.toString().replace(/\|"/g, "").indexOf("Chrome") > -1 ? "chrome" : userAgent.toString().replace(/\|"/g, "").indexOf("Safari") > -1 ? "safari" : userAgent.toString().replace(/\|"/g, "").indexOf("Firefox") > -1 ? "firefox" : "ie";
+	akamaiSession.setUserAgent(userAgent);
+	akamaiSession2.setUserAgent(userAgent);
+	let win = new BrowserWindow({
+		show: false,
+		webPreferences: {
+			session: akamaiSession,
+			devTools: true
+		}
+	});
+	
+	await win.show()
+	await win.webContents.openDevTools();
+
 	
 	// win.loadURL(
 	// 	url.format({
@@ -42,16 +61,29 @@ app.on('ready', async () => {
 	// 	  slashes: true
 	// 	})
 	//   );
-	win.loadURL(site.url)
-	akamaiSession = session.fromPartition('akamai', {cache: false});
+	await intercept()
+	setTimeout(async function(){
+		await win.loadURL(site.url, {userAgent: userAgent})
+	}, 1000)
 	// var userAgent = new UserAgent([/Chrome/, {deviceCategory: 'desktop', platform: 'MacIntel'}]).toString().replace(/\|"/g, "");
-	var userAgent = browserData[dataNum].userAgent.replace(/\|"/g, "");
-	var ua_browser = userAgent.toString().replace(/\|"/g, "").indexOf("Chrome") > -1 ? "chrome" : userAgent.toString().replace(/\|"/g, "").indexOf("Safari") > -1 ? "safari" : userAgent.toString().replace(/\|"/g, "").indexOf("Firefox") > -1 ? "firefox" : "ie";
-	akamaiSession.setUserAgent(userAgent);
-	var formInfo = await getforminfo();
-	init(site, userAgent, ua_browser, null, null, null, formInfo)
+	
+	var formInfo;
+	win.webContents.on('did-finish-load', async function() {
+		console.log('Finished loading')
+		formInfo = await getforminfo();
+		// controller(site, userAgent, ua_browser, null, null, null, formInfo)
+		init(site, userAgent, ua_browser, null, null, null, formInfo)
+	});
+
+	async function controller(site, userAgent, ua_browser, proxy, abck, post_url, formInfo){
+		var bmak = await init(site, userAgent, ua_browser, proxy, abck, post_url, formInfo);
+		var initialCookie = await get_abck(site, bmak, userAgent, ua_browser, proxy);
+
+	}
+	
 
 	async function init(site, userAgent, ua_browser, proxy, abck, post_url, formInfo){
+		console.log('init')
 		// akamaiSession.cookies.get({})
         //   .then((cookies) => {
 		// 	  console.log(cookies)
@@ -65,6 +97,7 @@ app.on('ready', async () => {
 				doact: 0,
 				doe_cnt: 0,
 				doe_vel: 0,
+				formInfo: formInfo,
 				fpValstr: "",
 				genmouse: "",
 				getmr: "",
@@ -106,6 +139,7 @@ app.on('ready', async () => {
 				ta: 0,
 				td: 0,
 				tst: -1,
+				type: '',
 				ua_browser: ua_browser,
 				updatet: 0,
 				vcact: "",
@@ -116,18 +150,19 @@ app.on('ready', async () => {
 				z1: 0,
 				z: -1
 			};
+			// return bmak;
 		abck == null ? await switcher('minimal', bmak) : await switcher('nomouse', bmak);
 		// await switcher('nomouse', bmak);
-		abck == null ? get_abck(site, bmak, userAgent, ua_browser, formInfo, proxy) : sensorGen(bmak, abck, ua_browser, userAgent, proxy, site, post_url, formInfo);
+		abck == null ? get_abck(site, bmak, userAgent, ua_browser, proxy) : sensorGen(bmak, abck, ua_browser, userAgent, proxy, site, post_url);
 	}
 
-	async function get_abck(site, bmak, userAgent, ua_browser, formInfo, proxy) {
+	async function get_abck(site, bmak, userAgent, ua_browser, proxy) {
 		var post_url,
 			req = net.request({
 				method: "GET",
 				url: site.url,
-				session: akamaiSession,
-				useSessionCookies: true,
+				session: akamaiSession2,
+				// useSessionCookies: true,
 				hostname: site.host,
 				headers: {
 					'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
@@ -136,7 +171,7 @@ app.on('ready', async () => {
 					'sec-fetch-mode': 'navigate',
 					'accept-encoding': 'gzip, deflate, br',
 					'accept-language': 'en-US,en;q=0.9'
-				}
+				},
 			});
 
 		req.on("response", (response) => {
@@ -150,9 +185,11 @@ app.on('ready', async () => {
 			});
 
 			response.on('end', () => {
-				akamaiSession.cookies.get({}).then((cookies) => {
+				akamaiSession2.cookies.get({}).then((cookies) => {
 					var abck = cookies.find(x => x.name === "_abck").value;
-					sensorGen(bmak, abck, ua_browser, userAgent, proxy, site, post_url, formInfo);
+					console.log('abck ' + abck)
+					getSubmitEndpoint(bmak, abck, ua_browser, userAgent, proxy, site, post_url);
+					// sensorGen(bmak, abck, ua_browser, userAgent, proxy, site, post_url);
 				}).catch((e) => logger.red('exception ' + e.stack));
 			});
 		});
@@ -182,9 +219,43 @@ app.on('ready', async () => {
 		// })
 	}
 
-	async function sensorGen(bmak, abck, ua_browser, userAgent, proxy, site, post_url, formInfo) {
+	async function getSubmitEndpoint(bmak, abck, ua_browser, userAgent, proxy, site, post_url){
+		var req = net.request({
+			method: "GET",
+			url: `https://${site.host}/${post_url}`,
+			session: akamaiSession2,
+			useSessionCookies: true,
+			hostname: site.host,
+			headers: {
+				'accept-encoding': 'gzip, deflate, br',
+				'accept-language': 'en-US,en;q=0.9',
+				'dnt': '1',
+				'referer': site.url,
+				'sec-fetch-dest': 'script',
+				'sec-fetch-mode':' no-cors',
+				'sec-fetch-site': 'same-origin',
+				'user-agent': userAgent
+			}
+		});
+
+	req.on("response", (response) => {
+		var body = '';
+		response.on("error", e => reject(e));
+		
+		response.on('data', (chunk) => {
+			body += chunk;
+		});
+
+		response.on('end', () => {
+			sensorGen(bmak, abck, ua_browser, userAgent, proxy, site, post_url);
+		});
+	});
+	req.end();
+	}
+
+	async function sensorGen(bmak, abck, ua_browser, userAgent, proxy, site, post_url) {
 		var g = "", w = "", y = "";
-		if(abck.includes("\|\|")) {
+		if(abck.includes("\|\|") && bmak.type != 'minimal') {
 			bmak = await mn_poll(abck, bmak);
 			bmak = await genChallengeMouseEvent(bmak);
 			var h = await mn_get_current_challenges(abck);
@@ -215,9 +286,9 @@ app.on('ready', async () => {
 			"-1,2,-94,-101," +
 			"do_en,dm_en,t_en" +
 			"-1,2,-94,-105," +
-			formInfo +
+			bmak.formInfo +
 			"-1,2,-94,-102," +
-			formInfo +
+			bmak.formInfo +
 			"-1,2,-94,-108," +
 			//bmak.kact
 			"-1,2,-94,-110," +
@@ -267,23 +338,27 @@ app.on('ready', async () => {
 			k +
 			"-1,2,-94,-121,";
 		var sensor = await gen_key(sensor_data, bmak);
+		logger.yellow(sensor)
+		// init(site, userAgent, ua_browser, proxy, abck, post_url, formInfo);
+		// sendPost(sensor, formInfo, userAgent, ua_browser, proxy, site, post_url, abck)
 		validator(sensor, bmak, formInfo, userAgent, ua_browser, proxy, site, post_url, abck)
 	}
 
 	async function validator(sensor, bmak, formInfo, userAgent, ua_browser, proxy, site, post_url, abck) {
 		var ak_bmsc;
 		var bm_sz;
-		await akamaiSession.cookies.get({})
-          .then((cookies) => {
-			ak_bmsc = cookies.find(x => x.name === "ak_bmsc").value;
-			bm_sz = cookies.find(x => x.name === "bm_sz").value;
-		  })
+		// await akamaiSession.cookies.get({})
+        //   .then((cookies) => {
+		// 	  console.log(cookies)
+		// 	ak_bmsc = cookies.find(x => x.name === "ak_bmsc").value;
+		// 	bm_sz = cookies.find(x => x.name === "bm_sz").value;
+		//   })
 		//   console.log(`DCT_Exp_HUNDRED=DCT; bm_sz=${bm_sz}; ak_bmsc=${ak_bmsc}; _abck=${abck}; check=true`)
 
 		var options = {
 			'method': 'POST',
 			'url': `https://${site.host}/${post_url}`, 
-			'session': akamaiSession,
+			'session': akamaiSession2,
 			'useSessionCookies': true,
 			'hostname': site.host,
 			headers: {
@@ -299,7 +374,7 @@ app.on('ready', async () => {
 				'accept-encoding': 'gzip, deflate, br',
 				'accept-language': 'en-US,en;q=0.9,fr;q=0.8,de;q=0.7',
 				'dnt': '1',
-				'Cookie': `DCT_Exp_HUNDRED=DCT; bm_sz=${bm_sz}; ak_bmsc=${ak_bmsc}; _abck=${abck}; check=true`
+				// 'Cookie': `DCT_Exp_HUNDRED=DCT; bm_sz=${bm_sz}; ak_bmsc=${ak_bmsc}; _abck=${abck}; check=true`
 			},
 		};
 		
@@ -311,11 +386,13 @@ app.on('ready', async () => {
 			});
 		
 			res.on("end", function (chunk) {
-				akamaiSession.cookies.get({}).then(async (cookies) => {
+				akamaiSession2.cookies.get({}).then(async (cookies) => {
 					var abck = cookies.find(x => x.name === "_abck").value;
 					var verify = verify_abck(abck, site, true);
 					verify.success ? logger.green(JSON.stringify(verify)) && writeToFile(abck) : logger.red(JSON.stringify(verify));
-					init(site, userAgent, ua_browser, proxy, abck, post_url, formInfo);
+					if(cookie_counter < 4){
+						init(site, userAgent, ua_browser, proxy, abck, post_url, formInfo);
+					}
 				}).catch((e) => logger.red(e.message));
 			});
 		
@@ -332,8 +409,6 @@ app.on('ready', async () => {
 		
 		req.write(postData);
 
-		logger.yellow(sensor)
-		
 		req.end();
 
 		// var params = {
@@ -367,6 +442,45 @@ app.on('ready', async () => {
 		// });
 	}
 
+	async function sendPost(sensor, formInfo, userAgent, ua_browser, proxy, site, url, abck){
+		await win.webContents.executeJavaScript(`
+		function check_cookie_name(name) 
+		{
+			var match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+			if (match) {
+				return match[2];
+			}
+			else{
+				console.log('--something went wrong--');
+			}
+		}
+		async function send(callback){
+		return new Promise((resolve, reject) => {
+			var n;
+			undefined !== window.XMLHttpRequest ? n = new XMLHttpRequest : undefined !== window.XDomainRequest ? (n = new XDomainRequest, n.onload = function () {
+				this.readyState = 4, this.onreadystatechange instanceof Function && this.onreadystatechange()
+			}) : n = new ActiveXObject("Microsoft\.XMLHTTP"), n.open("POST", '${url}', true), undefined !== n.withCredentials && (n.withCredentials = true);
+			var o = '\{"sensor_data":"' + '${sensor}' + '"\}';
+			n.onreadystatechange = function () {
+                if (n.readyState > 3){
+					resolve(check_cookie_name('_abck'));
+				}
+            },
+			n.send(o)
+		})
+		}
+		send()
+		`).then(response => {
+			abck = response;
+			console.log(abck)
+			var verify = verify_abck(abck, site, true);
+			verify.success ? logger.green(JSON.stringify(verify)) && writeToFile(abck) : logger.red(JSON.stringify(verify));
+			if(cookie_counter < 4){
+				init(site, userAgent, ua_browser, proxy, abck, url, formInfo);
+			}
+		})
+	}
+
 	function gen_key(sensor_data, bmak) {
 		var a = get_cf_date();
 		var y = od("0a46G5m17Vrp4o4c", "afSbep8yjnZUjq3aL010jO15Sawj2VZfdYK8uY90uxq").slice(0, 16);
@@ -389,11 +503,144 @@ app.on('ready', async () => {
 		}
 	}
 
+	function getCookieVal(name, details){
+		if(!details.requestHeaders['Cookie'].includes(name)) return details;
+		details.requestHeaders['Cookie'] = details.requestHeaders['Cookie'].replace(name + '=' + details.requestHeaders['Cookie'].split(`${name}=`)[1].split(';')[0] + ';', '');
+		return details
+	}
+
+	async function intercept(){
+		const filter = {
+			urls: ['https://www.footlocker.com/assets/*']
+		  }
+		  var count = 0;
+		  win.webContents.session.webRequest.onBeforeSendHeaders(filter, async(details, callback) => {
+			  if(details.method == 'POST'){
+				details.uploadData.forEach(async part => {
+					console.log(part.bytes.toString('utf8'))
+				})
+				// details = await getCookieVal('check', details);
+				// details = await getCookieVal('mbox', details);
+				// details = await getCookieVal('AMCV_40A3741F578E26BA7F000101%40AdobeOrg', details);
+				// details = await getCookieVal('AMCVS_40A3741F578E26BA7F000101%40AdobeOrg', details);
+				// var cleanStr = details.requestHeaders['Cookie'].split('_abck=')[1].split(';')[0];
+				// details.requestHeaders['Cookie'] = details.requestHeaders['Cookie'].replace(cleanStr, 'C43E5257DCBECA8C1CC90B7E58F8DB0B~-1~YAAQlKoRYGHr6L1xAQAAuSd56APej+pd8yvTOQZiA34H1E7S1949T54xNYRsHrzJPgrjz9TI6+RD+0cP2jD3j3tgvUR9w06jpMyNik1opsQlt/6uvGIwWo/SKsXZovhTZaZwf9BAQken1lIaO3s3P8EnD8gT5LzW2ms9ojoBZD3oN3E58PgWMD12IQX1px//S3yJIqEvYoAv1OLIyeNUbXzbY1B6CSGTjhfVQlQLCq0GBlh469XLsXoNyaSK5gJyzhPp3xNxa/Vdy3V9RPANY2r08wT5TAnoiYPlhHoEOt45QYQrOSNCCtJKoyhpoA==~-1~-1~-1')
+				// sensor;
+				// if(count == 0) sensor = `7a74G7m23Vrp0o5c9165131.54-1,2,-94,-100,Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.163 Safari/537.36,uaend,12147,20030107,en-US,Gecko,3,0,0,0,390898,1040935,1440,832,1440,900,1440,821,1440,,cpen:0,i1:0,dm:0,cwen:0,non:1,opc:0,fc:0,sc:0,wrc:1,isc:0,vib:1,bat:1,x11:0,x12:1,8931,0.646547378323,794355520407.5,loc:-1,2,-94,-101,do_en,dm_en,t_en-1,2,-94,-105,-1,2,-94,-102,-1,2,-94,-108,-1,2,-94,-110,-1,2,-94,-117,-1,2,-94,-111,-1,2,-94,-109,-1,2,-94,-114,-1,2,-94,-103,-1,2,-94,-112,https://www.footlocker.com/-1,2,-94,-115,1,32,32,0,0,0,0,9,0,1588711040815,-999999,16995,0,0,2832,0,0,10,0,0,${abck},29544,-1,-1,30261693-1,2,-94,-106,0,0-1,2,-94,-119,-1-1,2,-94,-122,0,0,0,0,1,0,0-1,2,-94,-123,-1,2,-94,-124,-1,2,-94,-126,-1,2,-94,-127,-1,2,-94,-70,-1-1,2,-94,-80,94-1,2,-94,-116,46842240-1,2,-94,-118,74881-1,2,-94,-121,;18;-1;0`
+				// if(count == 1) sensor = `7a74G7m23Vrp0o5c9165131.54-1,2,-94,-100,Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.163 Safari/537.36,uaend,12147,20030107,en-US,Gecko,3,0,0,0,390898,1040999,1440,832,1440,900,1440,821,1440,,cpen:0,i1:0,dm:0,cwen:0,non:1,opc:0,fc:0,sc:0,wrc:1,isc:0,vib:1,bat:1,x11:0,x12:1,8931,0.882576068441,794355520470,loc:-1,2,-94,-101,do_en,dm_en,t_en-1,2,-94,-105,-1,2,-94,-102,-1,2,-94,-108,-1,2,-94,-110,-1,2,-94,-117,-1,2,-94,-111,-1,2,-94,-109,-1,2,-94,-114,-1,2,-94,-103,-1,2,-94,-112,https://www.footlocker.com/-1,2,-94,-115,1,32,32,0,0,0,0,1569,0,1588711040940,106,16995,0,0,2832,0,0,1570,0,0,${abck},29544,516,16516272,30261693-1,2,-94,-106,9,1-1,2,-94,-119,29,50,33,34,113,18,11,8,7,5,5,1178,1332,335,-1,2,-94,-122,0,0,0,0,1,0,0-1,2,-94,-123,-1,2,-94,-124,-1,2,-94,-126,-1,2,-94,-127,01321144241322243122-1,2,-94,-70,-36060876;-1849314799;dis;,7,8;true;true;true;240;true;24;24;true;false;1-1,2,-94,-80,5497-1,2,-94,-116,5205005-1,2,-94,-118,78285-1,2,-94,-121,;16;18;0`
+				// 	var responseData = Buffer.from(sensor, 'utf8');
+				// 	count++
+				// 	callback({cancel: 'true', beforeSendResponse: {"sensor_data":"foo"}, requestHeaders: details.requestHeaders})
+				// })
+
+				// const request = net.request(details)
+				// request.on('response', res => {
+				// 	const chunks = []
+
+				// 	res.on('data', chunk => {
+				// 		chunks.push(Buffer.from(chunk))
+				// 	})
+
+				// 	res.on('end', async() => {
+				// 		const file = Buffer.concat(chunks)
+				// 		callback(file)
+				// 	})
+				// })
+
+				// if (details.uploadData) {
+				// 	details.uploadData.forEach(part => {
+				// 		if (part.bytes) {
+				// 			request.write(part.bytes)
+				// 		} else if (part.file) {
+				// 			request.write(fs.readFileSync(part.file))
+				// 		}
+					// })
+				// }
+				// request.end()
+				callback({ cancel: true, requestHeaders: details.requestHeaders })
+			  } else {
+				details.requestHeaders['User-Agent'] = 'MyAgent'
+				callback({ cancel: false, requestHeaders: details.requestHeaders })
+			  }
+		  })
+		// count = 0;
+		// win.webContents.session.protocol.interceptHttpProtocol('https', (req, callback) => {
+		// 	if (req.url == 'https://www.footlocker.com/assets/ea4ac69816262992aff5b862e75c' && req.method == 'POST') {
+		// 		console.log(req)
+		// 		req.uploadData.forEach(part => {
+		// 			console.log(part.bytes.toString('utf8'))
+		// 			var abck = 'foo',
+		// 			sensor;
+		// 			if(count == 0) sensor = `7a74G7m23Vrp0o5c9165131.54-1,2,-94,-100,Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.163 Safari/537.36,uaend,12147,20030107,en-US,Gecko,3,0,0,0,390898,1040935,1440,832,1440,900,1440,821,1440,,cpen:0,i1:0,dm:0,cwen:0,non:1,opc:0,fc:0,sc:0,wrc:1,isc:0,vib:1,bat:1,x11:0,x12:1,8931,0.646547378323,794355520407.5,loc:-1,2,-94,-101,do_en,dm_en,t_en-1,2,-94,-105,-1,2,-94,-102,-1,2,-94,-108,-1,2,-94,-110,-1,2,-94,-117,-1,2,-94,-111,-1,2,-94,-109,-1,2,-94,-114,-1,2,-94,-103,-1,2,-94,-112,https://www.footlocker.com/-1,2,-94,-115,1,32,32,0,0,0,0,9,0,1588711040815,-999999,16995,0,0,2832,0,0,10,0,0,${abck},29544,-1,-1,30261693-1,2,-94,-106,0,0-1,2,-94,-119,-1-1,2,-94,-122,0,0,0,0,1,0,0-1,2,-94,-123,-1,2,-94,-124,-1,2,-94,-126,-1,2,-94,-127,-1,2,-94,-70,-1-1,2,-94,-80,94-1,2,-94,-116,46842240-1,2,-94,-118,74881-1,2,-94,-121,;18;-1;0`
+		// 			if(count == 1) sensor = `7a74G7m23Vrp0o5c9165131.54-1,2,-94,-100,Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.163 Safari/537.36,uaend,12147,20030107,en-US,Gecko,3,0,0,0,390898,1040999,1440,832,1440,900,1440,821,1440,,cpen:0,i1:0,dm:0,cwen:0,non:1,opc:0,fc:0,sc:0,wrc:1,isc:0,vib:1,bat:1,x11:0,x12:1,8931,0.882576068441,794355520470,loc:-1,2,-94,-101,do_en,dm_en,t_en-1,2,-94,-105,-1,2,-94,-102,-1,2,-94,-108,-1,2,-94,-110,-1,2,-94,-117,-1,2,-94,-111,-1,2,-94,-109,-1,2,-94,-114,-1,2,-94,-103,-1,2,-94,-112,https://www.footlocker.com/-1,2,-94,-115,1,32,32,0,0,0,0,1569,0,1588711040940,106,16995,0,0,2832,0,0,1570,0,0,${abck},29544,516,16516272,30261693-1,2,-94,-106,9,1-1,2,-94,-119,29,50,33,34,113,18,11,8,7,5,5,1178,1332,335,-1,2,-94,-122,0,0,0,0,1,0,0-1,2,-94,-123,-1,2,-94,-124,-1,2,-94,-126,-1,2,-94,-127,01321144241322243122-1,2,-94,-70,-36060876;-1849314799;dis;,7,8;true;true;true;240;true;24;24;true;false;1-1,2,-94,-80,5497-1,2,-94,-116,5205005-1,2,-94,-118,78285-1,2,-94,-121,;16;18;0`
+		// 				var responseData = Buffer.from(sensor, 'utf8');
+		// 				count++
+		// 				// callback({uploadData: responseData, requestHeaders: details.requestHeaders})
+		// 				callback(responseData)
+		// 				return;
+		// 				const request = net.request(req)
+		// 		request.on('response', res => {
+		// 			const chunks = []
+
+		// 			res.on('data', chunk => {
+		// 				chunks.push(Buffer.from(chunk))
+		// 			})
+
+		// 			res.on('end', async() => {
+		// 				const file = Buffer.concat(chunks)
+		// 				callback(file)
+		// 			})
+		// 		})
+
+		// 		if (req.uploadData) {
+		// 			console.log('upload data')
+		// 			req.uploadData.forEach(part => {
+		// 				if (part.bytes) {
+		// 					request.write(responseData)
+		// 				} else if (part.file) {
+		// 					request.write(fs.readFileSync(part.file))
+		// 				}
+		// 			})
+		// 		}
+		// 		request.end()
+		// 		})
+		// 	} else {
+		// 		console.log(req)
+			// 	const request = net.request(req)
+			// 	request.on('response', res => {
+			// 		const chunks = []
+
+			// 		res.on('data', chunk => {
+			// 			chunks.push(Buffer.from(chunk))
+			// 		})
+
+			// 		res.on('end', async() => {
+			// 			const file = Buffer.concat(chunks)
+			// 			callback(file)
+			// 		})
+			// 	})
+
+			// 	if (req.uploadData) {
+			// 		req.uploadData.forEach(part => {
+			// 			if (part.bytes) {
+			// 				request.write(part.bytes)
+			// 			} else if (part.file) {
+			// 				request.write(fs.readFileSync(part.file))
+			// 			}
+			// 		})
+			// 	}
+			// 	request.end()
+			// }
+		// })
+	}
+
 	async function switcher(type, bmak){
 		var add_random = lodash.random(600, 1600);
 		var canvasArray = [-258688526,-380229768,-910147602,-642074913,1454575003,-1627350430,-2087321731,-552230799,681622556,1468298035,-968659517,792904753,1872114383,-768838012,-1422808916,-1690440540,918177569,-299824332,-1100926242,590387504,1204914753,-850342987,1434960077,-184491859,-252924566,-1590637647,-906906434,1994921761,-1014216413,490096504,1377200418,-320790731,-1003491391,-1593598986,-1959133361,-2024885122,473012774,-329194412,1033447141,1890175965,1099923539,-672395682,502393356,943657248,1303997989,1720664392,1665785846,-1039492718,1595197574,774758725,-2053610281,-1534714262,1345437442,-1672230605,419952338,-283135681,-1838110275,-479081611,336557930,-1949793014,-1875028898,-105344335,-56519046,-506985284,-133219342,717760806,683192729,-2023689198,-797584100,387610619,-624734334,-1559441329,98693687,482089505,1642163098,771424090,-2102473331,1596732241,365734556,-1036769400,-1828356990,-2126145962,-1880052230,-1823219244,-2049470082,509393476,671236453,-643946448,2023922389,-1548751671,892401278,935944785,1845025122,2606366,1109190367,463462894,-984871412,1522275505,-1998744585,1057016696,1516994777,899809789,-2056282797,-1401291820,1405341072,-1659079231,-1098063850,-1775584524,1167084910,-1203860934,-1739252648,1658412146,1012595405,1328031493,845785392,365563868,-100528605,1481032659,1164376938,-2054079242,-1134554344,1419213814,1277909185,445886213,1613561813,-1644599259,1372775405,873406024,-2045491203,175608234,1132364414,1741893195,987457133,-1516174339,-405450964,-82625416,-2080348235,-519820048,-1530580113,176993305,850728828,1234546812,1350393282,7645340,-1257794611,2121130236,993907753,909177413,-984538518,800661011,-1904734195,-278662786,733151654,1455681486,1139284331,-1209505346,-168824815,1337533696,482975363,-90780829,827715054,-1212852372,1387921604,-316044306,-1198197263,1352105616,-1048079677,-4901305,1981168010,801095379,-529550983,667233341,1452083482,263139143,449799980,-1248862444,1985197412,-492400093,165735080,971725205,624507096,1885720402,-1374252450,-161232591,930207515,-306696578,1260652560,564030182,-1690440424,1044398475,1605056938,606742522,-2112242920,1787970790,2130019848,1696807714,1524933943,-456086790,-883157529,-1976146447,-323217155,-954379794,1355634429,918764075,-1186630950,-522019341,-828390735,-2126970604,-632898889,200897686,1476230058,-1911364106,-650568971,1572861600,-1516942358,523475053,-1971008308,1005878714,161028307,570616773,1077436128,-935905905,1916171924,1174366911,-1237479794,-943904773,-1047765989,-1125300377,1612038834,-35000204,-107771871,-1389844782,-1028854978,1293591563,-1167839215,2058641366,1182808274,1165921662,217391223,-315998290,-1229038094,-1822001433,-187912077,1100692638,378695697,-494446180,-1554333920,-1453007041,984132648,140145595,-1955364192,-1604616878,310132848,-177965470,1135921945,1055114156,-1221961150,675514309,-339886135,2143817175,-1320546811,-587969387,-1922307056,-505386012,-1506827828,1358099373,1621629411,843462594,-523095756,409654245,-867192464,-767303534,-773094730,1813932073,-84577464,-986751055,1126894857,-322258131,1048330850,1838791977,-1571958021,-1589413718,-1006860530,-346424859,-796931837,1393120955,14855716,505786525,-643533959,113790283,1828888626,17324485,1239252261,1991762298,1912879515,-914799973,-153705403,-274048750,232854839,-373205660,-1908904817,-931491701,33790275,173335966,-2135953573,1429506244,-955312352,-1072513886,983187086,-1412830555,1596673802,1516879041,963515989,933704263,-2052288503,65844785,1488899022,17467309,-2012468492,-852978433,-1699263931,276533966,-195879488,1560790008,-276176615,1016937411,-1603358651,910685505,-1364955012,-1017437590,236760183,1725534116,-1559970395,-702952436,1234637032,121356017,-374242116,-1638850243,-1112094112,148913778,-1186882379,-1656367166,312158799,-231214470,1609361956,-2090251722,715337012,1861524823,-2039847086,2083787088,1574248546,884639223,-1790283213,-92856436,638775442,734547668,863468051,-223698491,1515381855,1781901138,-36416617,-735690133,706153569,438160177,-1033047417,1487339943,-869639204,-925445670,1808462405,50946879,394524621,706323612,765361903,1065314165,1893244412,1879968007,1342811245,1166009843,1034509870,893217566,-1044830369,2074449951,1472904622,858533177,976762486,1401081377,-565973016,245050634,-1035400908,-979069881,-1935615546,-926202838,-789344540,-1299821532,1350641492,756704389,732653660,806265358,1771619217,-1806637971,-1299526048,-921714080,1245951968,-1499933886,-514471883,961252547,-1600241058,-979445115,-480479628,829980267,941106298,525711418,-240296881,-1429532413,-1016477073,-2137745713,-312024775,-1038527564,-1311849555,1692812886,-1975257310,-1614522809,-474844608,-1048987855,-334605269,357011607,1903211848,-871403296,166496018,2132094792,-1419368974,1249301791,-987350054,942562193,-946143950,1420051882,-485339647,-1759902971,-1676860753,1291121709,-1590948176,-1991807083,717535678,-894148759,1078383725,-1440495522,-1482007412,922701385,-1987241925,-1299492863,-254338881,-85080367,1666295398,-599688957,-1946482893,1606837949,-754412071,242417931,-1226017357,806280314,1764097388,1917974438,-1229958227,-534668515,-1103786397,-820506042,-1154851989,789717163,1537236374,-1378630083,-1738305695,542601657,-1129862068,-443509507,-845081808,1242749413,-1841895320,-18012966,729844124,517133709,1010460475,621407935,886950167,1493179651,1670892287,-1735636821,-881424725,-1010583789,-817205306,1686815234,1648956571,480034744,-95853288,-580071365,1476003279,-14051860,1508713146,1014377593,246287052,1455654485,-299825011,-268747218,513105997,-217973441,-1087421795,-779996976,154630619,-1534839609,255899654,-1959670965,-1121161339,-1740773695,1523726831,-1151427033,-1847062949,29160895,16516272,-1638463703,1134544339,-1032662166,1349639910,1439005589,1928380368,-800978756,-1722212029,-22952513,-760365355,-1739833163,-1773862672,1157049676,-1921064576,-880371606,416719594,-1754108269,1125135107,603784203,-821599346,-1576981016,1853778667,-1877370610,2070635919,524486792,-1136421537,-1140216172,-380424975,1404024697,1040524592,-918006681,-2116893411,1177636017,-1813987613,-1955511204,-915346280,775660831,2187405,1193493515,282850357,-568141974,-1167613657,336694120,-1521806280,-851124730,279455890,-1046413370,175590908,-1293737519,-892109913,-1257998071,1027252794,-1034023587,-1903727290,1831115731,-514965615,201034976,692871038,-302903434,1966463954,770262050,2096457252,-749691641,-1295431555,329875092,1864688235,-57212845,1070175570,202856167,-2110628,-638892055,-834271936,-2041139586,-1112424664,-945810206,506104879,1308063270,-262599732,-636133997,-100507472,-1198494937,1845793138,-1748492529,-965757490,-266141959,391492585,999189973,-794269044,-770798309,-532268442,779907080,-1697282099,1943493379,-1768209806,-792269116,1255674906,1435887540,286132079,-1551834539,-2028799728,690667456,323944900,-498285799,-1735579108,-1638921255,1615028357,1410146618,923064790,-1219293980,-192925144,-1476773501,-1726149465,-1352524847,1574438244,-2114686162,623353945,1539583716,-1936544814,-625557109,-1850378022,-296786123,-1917306138,2119875620,-1256544066,1423959906,-1918664649,307157306,1305387685,702136856,-2081213803,2000529563,-1646669521,-1241881201,1184546978,-1831835215,-269585743,1897287603,-729993291,-760597134,-554743091,1654579694,-397248697,650970331,-355795650,-1329771447,-378714370,-1882959208,885128646,-1840808499,523033904,211461706,1458211852,1344021496,-1344629673,1554131943,221477349,-2140740438,-2094728770,433142806,149557752,-305508085,-218281914,-2038416455,1709855065,865951137,1384161526,-1566012780,-1078600774,1616115895,651299023,-1552762728,-400882637,-1986611575,1974809509,-1968890847,-1483947074,-2068264326,-872797655,-2046079536,1921907369,-188786761,1469307639,1271683050,-95806663,527928166,1979329417,1364384164,80083159,-1753357456,1926611114,1013093610,-153255278,-433637289,600352388,1910113175,843281291,1079529553,539335608,1188911425,1746072188,2068013213,-307008226,-2104701177,391742678,-360150762,-2144133911,-1645746788,2051312314,430425483,324855823,-1205225244,-1034678099,-374050393,-946043456,1955424182,-975669769,762276854,-857314060,-998560693,-578052362,-1499553884,-291351290,1690326096,-591580249,94377739,-833906175,779958138,-2058085455,2028279384,798645864,-210589242,-1701325717,1940788165,-1045317424,-542976023,-844552550,1946293243,999250251,550920105,-1604735723,-416716967,1252174709,1300291386,-212188266,558001247,1054248821,893180224,-512100532,1980317548,1843800547,1074809575,-1511651738,2138031004,1515134667,58860384,1582495396,-170570642,-304257926,384838318,1301853571,-472575317,-2096166160,872932967,-1378669788,1335144781,-369148539,-885736967,-1811935563,149328226,-1421003447,311538186,1956348216,-1365769595,-31766439,-2132925211,1029568641,637046469,-601862137,-1573470551,815916176,2050335435,-1089555714,-1421711902,-480591687,325317125,1812614504,1332755845,-1033971972,-655911794,-1637243605,-600594122,2025215381,-1315034565,154297519,2053584813,1409535141,535910440,-1934356819,-895408955,1459135497,-604295372,883658489,703051130,1914030205,-1753105422,-1714841549,-1961113770,1893921502,867246850,844199983,-2025624521,1674457409,1144662859,-468434663,-152996295,860208855,1930563111,1299410111,-2126368622,1091932033,-1448695275,1259662135,748635992,-1836079659,1227975603,482667487,-89159812,-2075380707,1690536291,690076925,969296919,-1166874454,632349224,-1062484194,1049070721,370601979,-1513703034,904680186,-2042648983,-1907617059,2057813156,1123068287,-1012199070,-1114398061,925087610,1475556409,1875246208,2064922467,1573376728,784287628,-1926896999,1298177385,-909654206,-685966616,262509527,1900749289,511092653,369721886,736217480,-1875147238,1542350551,-672901527,-370125508,-72120016,-1592799810,-918670348,-521498789,1115367753,2046442295,-893958995,1906215645,-467522783,-1170032566,-1300835752,1130820842,162830643,-1690938757,1210214650,981590209,-211648942,1188530149,-280172162,-1995919837,710932903,181857257,-1697875030,-1345614003,264465643,-379825717,-2076882578,533200158,-577398117,-687179673,-1313061805,-342997765,1180392947,1328950321,142178060,-367975685,1352221793,-760017623,1108050233,-611654777,871794052,238653167,1063358622,1283516056,-280337387,154958994,-92913881,-172712666,629480492,768999156,2003025250,-424053337,590906940,-1879159956,-146182503,1439644808,-1860335561,-1859965811,-1423950573,1431458228,-1416222855,1959538097,-1454392165,2099726725,1035870658,-1515465314,9698996,-723565764,-992591845,2082159340,655766253,-1254207960,203944385,-1959022703,-2009515897,-260196031,-626768058,-1539423197,784706541,-1964155249,993855571,-2083804049,1215008054,593156823,-13878337,1263752775,1073726159,986390186,-1726133962,-1360419847,-1072041758,447894757,-929769051,-571041888,1033841466,1583464646,911587120,-57607189,1459059972,-2094338290,1603664502,1934366767,356865128,1475176013,-172402483,1113038729,-41796291,272570950,186801301,1723843249,1587180766,360416223,-1808641695,994893307,802397304,-540255740,-1256861600,1349533949,33192664,-1443816258,2027772712]
 		switch(type) {
-			case 'minimal': bmak.updatet = lodash.random(1,10);
+			case 'minimal': bmak.type = 'minimal',
+			bmak.formInfo = '',
+			bmak.updatet = lodash.random(1,10);
 			bmak.td = -999999;
 			bmak.pe_cnt = 0;
 			bmak.s = lodash.random(1,10);
@@ -406,7 +653,8 @@ app.on('ready', async () => {
 			bmak.y = -1;
 			break;
 
-			case 'nomouse': bmak.updatet = add_random;
+			case 'nomouse': bmak.type = 'nomouse',
+			bmak.updatet = add_random;
 			bmak.td = lodash.random(40, 200);
 			bmak.pe_cnt = 0;
 			bmak.s = bmak.updatet + 1;
@@ -420,7 +668,8 @@ app.on('ready', async () => {
 			bmak.tst = lodash.random(10, 70);
 			break;
 
-			case 'mouse': bmak.genmouse = genMouseData(bmak);
+			case 'mouse': bmak.type = 'mouse',
+			bmak.genmouse = genMouseData(bmak);
 			bmak.updatet = add_random;
 			bmak.td = lodash.random(40, 200);
 			bmak.pe_cnt = lodash.random(3,7);
@@ -475,33 +724,37 @@ app.on('ready', async () => {
 	}
 
 	function screenSize() {
-		// return lodash.sample([
-		// 	['1098', '686', '1098', '686', '1098', '583', '1098'],
-		// 	['1280', '680', '1280', '720', '1280', '578', '1280'],
-		// 	['1440', '776', '1440', '900', '1440', '660', '1440'],
-		// 	['1440', '826', '1440', '900', '1440', '746', '1440'],
-		// 	['1440', '860', '1440', '900', '1440', '757', '1440'],
-		// 	['1440', '831', '1440', '900', '1440', '763', '1440'],
-		// 	['1440', '851', '1440', '900', '1420', '770', '1420'],
-		// 	['1440', '786', '1440', '900', '1440', '789', '1440'],
-		// 	['1440', '900', '1440', '900', '920', '789', '1440'],
-		// 	['1440', '900', '1440', '900', '1440', '821', '1440'],
-		// 	['1536', '824', '1536', '864', '1536', '722', '1536'],
-		// 	['1680', '972', '1680', '1050', '1680', '939', '1680'],
-		// 	['1680', '1020', '1680', '1050', '1680', '917', '1680'],
-		// 	['1920', '1040', '1920', '1080', '1920', '937', '1920'],
-		// 	['1920', '1040', '1920', '1080', '1920', '969', '1920'],
-		// 	['1920', '1080', '1920', '1080', '1920', '1007', '1920'],
-		// 	['2560', '1400', '2560', '1440', '2560', '1327', '2576'],
-		// 	['1024', '1024', '1024', '1024', '1024', '1024', '1024'],
-		// 	['1680', '973', '1680', '1050', '1133', '862', '1680'],
-		// 	['1680', '973', '1680', '1050', '1680', '862', '1680'],
-		// 	['1024', '768', '1024', '768', '1256', '605', '1272'],
-		// 	['1360', '728', '1360', '768', '1360', '625', '1358'],
-		// 	['1440', '797', '1440', '900', '1440', '685', '1440']
-		// ]);
 		logger.white(browserData[dataNum].resolutions)
-		return JSON.parse(browserData[dataNum].resolutions);
+		try{
+			JSON.parse(browserData[dataNum].resolutions)
+			return JSON.parse(browserData[dataNum].resolutions);
+		} catch(e){
+			return lodash.sample([
+				['1098', '686', '1098', '686', '1098', '583', '1098'],
+				['1280', '680', '1280', '720', '1280', '578', '1280'],
+				['1440', '776', '1440', '900', '1440', '660', '1440'],
+				['1440', '826', '1440', '900', '1440', '746', '1440'],
+				['1440', '860', '1440', '900', '1440', '757', '1440'],
+				['1440', '831', '1440', '900', '1440', '763', '1440'],
+				['1440', '851', '1440', '900', '1420', '770', '1420'],
+				['1440', '786', '1440', '900', '1440', '789', '1440'],
+				['1440', '900', '1440', '900', '920', '789', '1440'],
+				['1440', '900', '1440', '900', '1440', '821', '1440'],
+				['1536', '824', '1536', '864', '1536', '722', '1536'],
+				['1680', '972', '1680', '1050', '1680', '939', '1680'],
+				['1680', '1020', '1680', '1050', '1680', '917', '1680'],
+				['1920', '1040', '1920', '1080', '1920', '937', '1920'],
+				['1920', '1040', '1920', '1080', '1920', '969', '1920'],
+				['1920', '1080', '1920', '1080', '1920', '1007', '1920'],
+				['2560', '1400', '2560', '1440', '2560', '1327', '2576'],
+				['1024', '1024', '1024', '1024', '1024', '1024', '1024'],
+				['1680', '973', '1680', '1050', '1133', '862', '1680'],
+				['1680', '973', '1680', '1050', '1680', '862', '1680'],
+				['1024', '768', '1024', '768', '1256', '605', '1272'],
+				['1360', '728', '1360', '768', '1360', '625', '1358'],
+				['1440', '797', '1440', '900', '1440', '685', '1440']
+			]);
+		}
 	}
 
 	function get_browser(ua_browser, bmak) {
@@ -697,7 +950,7 @@ app.on('ready', async () => {
 		return mr;
 	}
 
-	async function getforminfo(site, userAgent, proxy) {
+	async function getforminfo() {
 		// var a = "",
 		// 	error_url = (site.error_page != null) ? site.error_page : `https://${site.host}/${randomstring.generate({length: 5,charset: 'alphabetic'})}`;
 		// // var params = {
@@ -786,7 +1039,8 @@ app.on('ready', async () => {
 			}
 
 			temp();
-		`).then((response) => { 
+		`).then((response) => {
+			console.log(response)
 			a = response;
 		});
 		return a;
