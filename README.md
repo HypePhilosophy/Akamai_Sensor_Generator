@@ -23,4 +23,4 @@ Cookies are valid for a year, except some websites may choose to clear them at a
 This Sensor generator is in fact, considered outdated. Akamai implemented ja3 ssl/tls checks as well as several new functions to their updated versions to prevent this code from running at scale. Yet this is not meant to be used for large scale Akamai cookie genning, but rather for research and a guide for future generators.
 
 ## Reflections
-Thank you to [Eric](https://github.com/ericz99) and [Zed](https://github.com/zedd3v) for making this possible. This was a fun project and hopefully will find life in guiding others.
+Thank you to [Eric](https://github.com/ericz99) and [Zed](https://github.com/zedd3v) for making this possible. This was a fun project and hopefully will find new life in guiding others.
