@@ -4,7 +4,7 @@ This repository is for research purposes only. It is a functional Akamai is a fu
 ## Setup
 1. Clone the repository
 2. Install the necessary dependencies
-3. 
+3. Run the command `npm run electron`
 
 ## Methodology
 The Akamai Sensor Generator was created by reversing the obfuscated Akamai Collector script, which can be found [here.](https://us.louisvuitton.com/bundles/f07e41afui210f89b730060204942b)
@@ -19,5 +19,8 @@ The Sensor Generator works like this:
 
 Cookies are valid for a year, except some websites may choose to clear them at any time.
 
+## Notes
+This Sensor generator is in fact, considered outdated. Akamai implemented ja3 ssl/tls checks as well as several new functions to their updated versions to prevent this code from running at scale. Yet this is not meant to be used for large scale Akamai cookie genning, but rather for research and a guide for future generators.
+
 ## Reflections
-Thank you to [Eric](https://github.com/ericz99) and [Zed](https://github.com/zedd3v) for making this possible.
+Thank you to [Eric](https://github.com/ericz99) and [Zed](https://github.com/zedd3v) for making this possible. This was a fun project and hopefully will find life in guiding others.
