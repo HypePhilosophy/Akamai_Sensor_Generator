@@ -4,7 +4,7 @@ const UserAgent = require('user-agents'),
         "AES128-SHA",
         "AES256-SHA"
 	].join(":");
-	url = require('url'),
+	var url = require('url'),
 	path = require('path'),
     cloudscraper = require('cloudscraper').defaults({ ciphers:ciphers}),
 	lodash = require('lodash'),
@@ -15,7 +15,7 @@ const UserAgent = require('user-agents'),
 	randomstring = require("randomstring"),
 	uuidv4 = require('uuid/v4'),
 	websites = require('./websites.json'),
-	browserData = require("./data.json"),
+	// browserData = require("./data.json"),
 	logger = require("./libs/logger"),
 	proxies = fs.readFileSync('./proxy.txt', 'utf-8').toString().toLowerCase().split("\r\n").filter(l => l.length !== 0),
 	{app, session, net, BrowserWindow} = require('electron'),
@@ -30,6 +30,7 @@ let cookie_counter = 0,
 	akamaiSession,
 	akamaiSession2
 	dataNum = lodash.random(0, browserData.length);
+	// dataNum = '-1818464567'
 app.allowRendererProcessReuse = false;
 app.commandLine.appendSwitch('disable-site-isolation-trials');
 
@@ -83,7 +84,6 @@ app.on('ready', async () => {
 	
 
 	async function init(site, userAgent, ua_browser, proxy, abck, post_url, formInfo){
-		console.log('init')
 		// akamaiSession.cookies.get({})
         //   .then((cookies) => {
 		// 	  console.log(cookies)
