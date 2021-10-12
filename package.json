@@ -35,6 +35,6 @@
     "uuid": "^3.4.0"
   },
   "devDependencies": {
-    "electron": "^8.5.1"
+    "electron": "^11.5.0"
   }
 }
