@@ -1,5 +1,5 @@
 # Akamai Sensor Generator
-This repository is for research purposes only. It is a functional Akamai is a functional akamai sensor generator, however is on version 1.52 of Akamai Anti-bot. In order to function on the newest Akamai version, it must be revamped, and some portions must be rewritten.
+This repository is for research purposes only. It is a functional Akamai sensor generator, however is on version 1.52 of Akamai Anti-bot. In order to function on the newest Akamai version, it must be revamped, and some portions must be rewritten.
 
 ## Setup
 1. Clone the repository
