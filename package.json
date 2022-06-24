@@ -22,7 +22,7 @@
     "fs": "0.0.1-security",
     "ghost-cursor": "^1.0.3",
     "helmet": "^3.21.2",
-    "jsdom": "^16.2.2",
+    "jsdom": "^16.5.0",
     "mongoose": "^5.8.7",
     "morgan": "^1.9.1",
     "path": "^0.12.7",
